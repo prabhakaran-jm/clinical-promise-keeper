@@ -1,0 +1,29 @@
+node_modules
+dist
+.env
+*.log
+
+# Claude Code local settings
+.claude/
+
+# Research docs (not part of deliverable)
+docs/fhir-r4-research.md
+docs/PRD.md
+
+# Compiled JS in test/ (only TS source matters)
+test/**/*.js
+
+# Sensitive files
+*.pem
+*.key
+*-credentials.json
+service-account*.json
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
