@@ -1,5 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { extractPromisesTool } from "./tools/extract-promises.js";
+import { checkPromisesTool } from "./tools/check-promises.js";
+import { generateTasksTool } from "./tools/generate-tasks.js";
+import { getPromiseSummaryTool } from "./tools/get-promise-summary.js";
 
 type ToolResponse = {
   content: Array<{ type: "text"; text: string }>;
@@ -137,6 +140,79 @@ function registerExtractPromisesTool(server: McpServer): void {
   );
 }
 
+function registerCheckPromisesTool(server: McpServer): void {
+  (server as unknown as {
+    registerTool: (
+      toolName: string,
+      config: { description: string; inputSchema: unknown },
+      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
+    ) => void;
+  }).registerTool(
+    "check_promises",
+    {
+      description:
+        "Verifies extracted clinical promises against FHIR data. Checks ServiceRequests, Observations, Appointments, and DiagnosticReports to determine if each promise has been kept.",
+      inputSchema: checkPromisesSchema,
+    },
+    async (args, extra) =>
+      checkPromisesTool(
+        (args ?? {}) as {
+          patientId?: string;
+          promises?: import("./promises/types.js").ClinicalPromise[];
+        },
+        extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
+      )
+  );
+}
+
+function registerGenerateTasksTool(server: McpServer): void {
+  (server as unknown as {
+    registerTool: (
+      toolName: string,
+      config: { description: string; inputSchema: unknown },
+      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
+    ) => void;
+  }).registerTool(
+    "generate_tasks",
+    {
+      description:
+        "Creates draft FHIR Task resources for unkept clinical promises. Tasks are returned as JSON (not written to the FHIR server) for clinician review.",
+      inputSchema: generateTasksSchema,
+    },
+    async (args, extra) =>
+      generateTasksTool(
+        (args ?? {}) as {
+          patientId?: string;
+          unkeptPromises?: import("./promises/types.js").PromiseStatus[];
+          writeback?: boolean;
+        },
+        extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
+      )
+  );
+}
+
+function registerGetPromiseSummaryTool(server: McpServer): void {
+  (server as unknown as {
+    registerTool: (
+      toolName: string,
+      config: { description: string; inputSchema: unknown },
+      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
+    ) => void;
+  }).registerTool(
+    "get_promise_summary",
+    {
+      description:
+        "End-to-end promise analysis for a patient. Fetches recent clinical notes, extracts promises, checks fulfillment, and returns a structured summary with action items.",
+      inputSchema: getPromiseSummarySchema,
+    },
+    async (args, extra) =>
+      getPromiseSummaryTool(
+        (args ?? {}) as { patientId?: string; lookbackDays?: number },
+        extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
+      )
+  );
+}
+
 export function createMcpServer(): McpServer {
   const server = new McpServer(
     {
@@ -153,27 +229,9 @@ export function createMcpServer(): McpServer {
   );
 
   registerExtractPromisesTool(server);
-
-  registerToolStub(
-    server,
-    "check_promises",
-    "Verifies extracted clinical promises against FHIR data. Checks ServiceRequests, Observations, Appointments, and DiagnosticReports to determine if each promise has been kept.",
-    checkPromisesSchema
-  );
-
-  registerToolStub(
-    server,
-    "generate_tasks",
-    "Creates draft FHIR Task resources for unkept clinical promises. Tasks are returned as JSON (not written to the FHIR server) for clinician review.",
-    generateTasksSchema
-  );
-
-  registerToolStub(
-    server,
-    "get_promise_summary",
-    "End-to-end promise analysis for a patient. Fetches recent clinical notes, extracts promises, checks fulfillment, and returns a structured summary with action items.",
-    getPromiseSummarySchema
-  );
+  registerCheckPromisesTool(server);
+  registerGenerateTasksTool(server);
+  registerGetPromiseSummaryTool(server);
 
   return server;
 }
