@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { extractPromisesTool } from "./tools/extract-promises.js";
 
 type ToolResponse = {
   content: Array<{ type: "text"; text: string }>;
@@ -109,6 +110,33 @@ function registerToolStub(
   );
 }
 
+function registerExtractPromisesTool(server: McpServer): void {
+  (server as unknown as {
+    registerTool: (
+      toolName: string,
+      config: { description: string; inputSchema: unknown },
+      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
+    ) => void;
+  }).registerTool(
+    "extract_promises",
+    {
+      description:
+        "Analyzes a clinical note to extract implicit and explicit clinical commitments (follow-up labs, appointments, imaging). Uses AI to identify promises that may not have corresponding orders.",
+      inputSchema: extractPromisesSchema,
+    },
+    async (args, extra) =>
+      extractPromisesTool(
+        (args ?? {}) as {
+          patientId?: string;
+          documentReferenceId?: string;
+          noteText?: string;
+          noteDate?: string;
+        },
+        extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
+      )
+  );
+}
+
 export function createMcpServer(): McpServer {
   const server = new McpServer(
     {
@@ -124,12 +152,7 @@ export function createMcpServer(): McpServer {
     }
   );
 
-  registerToolStub(
-    server,
-    "extract_promises",
-    "Analyzes a clinical note to extract implicit and explicit clinical commitments (follow-up labs, appointments, imaging). Uses AI to identify promises that may not have corresponding orders.",
-    extractPromisesSchema
-  );
+  registerExtractPromisesTool(server);
 
   registerToolStub(
     server,
