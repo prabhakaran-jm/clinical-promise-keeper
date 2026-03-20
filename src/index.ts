@@ -62,12 +62,24 @@ const TOOL_DEFINITIONS = [
   {
     name: "get_promise_summary",
     description:
-      "End-to-end promise analysis: fetches recent notes, extracts promises, checks fulfillment, returns summary with action items.",
+      "End-to-end promise analysis: analyzes clinical notes to extract promises, checks fulfillment against FHIR data, returns summary with action items. Pass notes directly for best results.",
     inputSchema: {
       type: "object",
       properties: {
         patientId: { type: "string", description: "FHIR Patient ID." },
         lookbackDays: { type: "number", default: 90, description: "How far back to search for clinical notes." },
+        notes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              noteText: { type: "string", description: "The clinical note text." },
+              noteDate: { type: "string", description: "Date of the note (YYYY-MM-DD)." },
+            },
+            required: ["noteText", "noteDate"],
+          },
+          description: "Clinical notes to analyze directly. Use this when note text is already available from GetPatientDocuments.",
+        },
       },
     },
   },
@@ -125,7 +137,10 @@ async function handleToolCall(
           extra
         );
       case "get_promise_summary":
-        return await getPromiseSummaryTool(args as { patientId?: string; lookbackDays?: number }, extra);
+        return await getPromiseSummaryTool(
+          args as { patientId?: string; lookbackDays?: number; notes?: Array<{ noteText: string; noteDate: string }> },
+          extra
+        );
       default:
         return { content: [{ type: "text", text: `Unknown tool: ${toolName}` }], isError: true };
     }
