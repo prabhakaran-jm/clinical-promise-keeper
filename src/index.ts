@@ -1,4 +1,4 @@
-import { createServer } from "node:http";
+import { createServer, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "./server.js";
@@ -14,21 +14,40 @@ async function start(): Promise<void> {
 
   await mcpServer.connect(transport);
 
+  const sendJson = (res: ServerResponse, status: number, payload: unknown): void => {
+    res.statusCode = status;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify(payload));
+  };
+
   const httpServer = createServer(async (req, res) => {
+    const method = req.method ?? "GET";
+    const path = req.url ? new URL(req.url, "http://localhost").pathname : "/";
+
     try {
-      getContext(req.headers);
-      await transport.handleRequest(req, res);
-    } catch (error) {
-      if (error instanceof ForbiddenError) {
-        res.statusCode = error.statusCode;
-        res.setHeader("content-type", "application/json");
-        res.end(JSON.stringify({ error: error.message }));
+      if (method === "GET" && path === "/health") {
+        sendJson(res, 200, {
+          status: "ok",
+          name: "clinical-promise-keeper",
+          version: "0.1.0",
+        });
         return;
       }
 
-      res.statusCode = 500;
-      res.setHeader("content-type", "application/json");
-      res.end(JSON.stringify({ error: "Internal server error" }));
+      if (path === "/mcp" && (method === "GET" || method === "POST" || method === "DELETE")) {
+        getContext(req.headers);
+        await transport.handleRequest(req, res);
+        return;
+      }
+
+      sendJson(res, 404, { error: "Not found" });
+    } catch (error) {
+      if (error instanceof ForbiddenError) {
+        sendJson(res, error.statusCode, { error: error.message });
+        return;
+      }
+
+      sendJson(res, 500, { error: "Internal server error" });
     }
   });
 

@@ -7,7 +7,9 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:local": "bash scripts/test-local.sh",
+    "deploy": "bash scripts/deploy-cloudrun.sh"
   },
   "dependencies": {
     "@google-cloud/vertexai": "latest",
