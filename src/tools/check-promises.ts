@@ -2,6 +2,7 @@ import { FhirClient } from "../fhir/client.js";
 import { checkPromises } from "../promises/checker.js";
 import type { ClinicalPromise } from "../promises/types.js";
 import { getContext } from "../sharp/context.js";
+import { getCurrentHeaders } from "../sharp/request-context.js";
 
 type CheckPromisesInput = {
   patientId?: string;
@@ -23,7 +24,7 @@ export async function checkPromisesTool(
       throw new Error("promises must be an array.");
     }
 
-    const headers = extra?.requestInfo?.headers ?? {};
+    const headers = extra?.requestInfo?.headers ?? getCurrentHeaders();
     const context = getContext(headers);
     const client = new FhirClient(context);
     const promises =
@@ -37,6 +38,7 @@ export async function checkPromisesTool(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error("[check_promises] Error:", message);
     return {
       content: [{ type: "text", text: `check_promises failed: ${message}` }],
     };

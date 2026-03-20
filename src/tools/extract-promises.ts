@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 import { FhirClient } from "../fhir/client.js";
 import { extractPromises } from "../promises/extractor.js";
 import { getContext } from "../sharp/context.js";
+import { getCurrentHeaders } from "../sharp/request-context.js";
 
 type ExtractPromisesInput = {
   patientId?: string;
@@ -82,7 +83,7 @@ export async function extractPromisesTool(
       throw new Error("noteDate is required.");
     }
 
-    const headers = extra?.requestInfo?.headers ?? {};
+    const headers = extra?.requestInfo?.headers ?? getCurrentHeaders();
     const context = getContext(headers);
     const patientId = input.patientId ?? context.patientId;
     if (!patientId) {
@@ -101,6 +102,7 @@ export async function extractPromisesTool(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error("[extract_promises] Error:", message);
     return {
       content: [{ type: "text", text: `extract_promises failed: ${message}` }],
     };

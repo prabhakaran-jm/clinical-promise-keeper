@@ -1,4 +1,5 @@
 import type { IncomingHttpHeaders } from "node:http";
+import { getCurrentHeaders } from "./request-context.js";
 
 export interface FhirContext {
   fhirServerUrl: string;
@@ -15,7 +16,7 @@ export class ForbiddenError extends Error {
   }
 }
 
-type HeaderInput = Headers | IncomingHttpHeaders | Record<string, string | undefined>;
+type HeaderInput = Headers | IncomingHttpHeaders | Record<string, string | string[] | undefined>;
 
 function readHeader(headers: HeaderInput, name: string): string | undefined {
   const lowerName = name.toLowerCase();
@@ -31,10 +32,15 @@ function readHeader(headers: HeaderInput, name: string): string | undefined {
   return value ?? undefined;
 }
 
-export function getContext(headers: HeaderInput): FhirContext {
-  const fhirServerUrl = readHeader(headers, "X-FHIR-Server-URL");
-  const fhirAccessToken = readHeader(headers, "X-FHIR-Access-Token");
-  const patientId = readHeader(headers, "X-Patient-ID");
+export function getContext(headers?: HeaderInput): FhirContext {
+  const effectiveHeaders =
+    headers && (!(headers instanceof Headers) ? Object.keys(headers).length > 0 : true)
+      ? headers
+      : getCurrentHeaders();
+
+  const fhirServerUrl = readHeader(effectiveHeaders, "X-FHIR-Server-URL");
+  const fhirAccessToken = readHeader(effectiveHeaders, "X-FHIR-Access-Token");
+  const patientId = readHeader(effectiveHeaders, "X-Patient-ID");
 
   if (!fhirServerUrl || !fhirAccessToken || !patientId) {
     throw new ForbiddenError(

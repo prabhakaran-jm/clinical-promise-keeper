@@ -5,6 +5,7 @@ import { extractPromises } from "../promises/extractor.js";
 import { checkPromises } from "../promises/checker.js";
 import { generateTasks } from "../tasks/generator.js";
 import { getContext } from "../sharp/context.js";
+import { getCurrentHeaders } from "../sharp/request-context.js";
 import type { ClinicalPromise } from "../promises/types.js";
 
 type SummaryInput = {
@@ -40,7 +41,7 @@ export async function getPromiseSummaryTool(
   extra?: ToolExtra
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
   try {
-    const headers = extra?.requestInfo?.headers ?? {};
+    const headers = extra?.requestInfo?.headers ?? getCurrentHeaders();
     const context = getContext(headers);
     const client = new FhirClient(context);
     const patientId = input.patientId ?? context.patientId;
@@ -89,6 +90,7 @@ export async function getPromiseSummaryTool(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error("[get_promise_summary] Error:", message);
     return {
       content: [{ type: "text", text: `get_promise_summary failed: ${message}` }],
     };

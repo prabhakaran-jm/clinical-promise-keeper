@@ -2,6 +2,7 @@ import { FhirClient } from "../fhir/client.js";
 import { generateTasks } from "../tasks/generator.js";
 import type { PromiseStatus } from "../promises/types.js";
 import { getContext } from "../sharp/context.js";
+import { getCurrentHeaders } from "../sharp/request-context.js";
 
 type GenerateTasksInput = {
   patientId?: string;
@@ -24,7 +25,7 @@ export async function generateTasksTool(
       throw new Error("unkeptPromises must be an array.");
     }
 
-    const headers = extra?.requestInfo?.headers ?? {};
+    const headers = extra?.requestInfo?.headers ?? getCurrentHeaders();
     const context = getContext(headers);
     const patientId = input.patientId ?? context.patientId;
     const tasks = generateTasks(patientId, input.unkeptPromises);
@@ -41,6 +42,7 @@ export async function generateTasksTool(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error("[generate_tasks] Error:", message);
     return {
       content: [{ type: "text", text: `generate_tasks failed: ${message}` }],
     };
