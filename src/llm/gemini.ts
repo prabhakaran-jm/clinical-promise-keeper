@@ -1,4 +1,4 @@
-import { VertexAI } from "@google-cloud/vertexai";
+import { GoogleGenAI } from "@google/genai";
 
 function requireEnv(name: "GCP_PROJECT_ID" | "GCP_LOCATION" | "GEMINI_MODEL"): string {
   const value = process.env[name];
@@ -14,31 +14,22 @@ export async function callGemini(systemPrompt: string, userPrompt: string): Prom
   const model = requireEnv("GEMINI_MODEL");
 
   try {
-    const vertexAI = new VertexAI({ project, location });
-    const generativeModel = vertexAI.getGenerativeModel({
+    const ai = new GoogleGenAI({
+      vertexai: true,
+      project,
+      location,
+    });
+
+    const response = await ai.models.generateContent({
       model,
-      systemInstruction: {
-        role: "system",
-        parts: [{ text: systemPrompt }],
-      },
-      generationConfig: {
+      config: {
+        systemInstruction: systemPrompt,
         responseMimeType: "application/json",
       },
+      contents: userPrompt,
     });
 
-    const response = await generativeModel.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userPrompt }],
-        },
-      ],
-    });
-
-    const text = response.response.candidates?.[0]?.content?.parts
-      ?.map((part) => ("text" in part ? part.text ?? "" : ""))
-      .join("")
-      .trim();
+    const text = response.text?.trim();
 
     if (!text) {
       throw new Error("Gemini returned an empty response.");

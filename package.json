@@ -12,7 +12,7 @@
     "deploy": "bash scripts/deploy-cloudrun.sh"
   },
   "dependencies": {
-    "@google-cloud/vertexai": "latest",
+    "@google/genai": "^1.46.0",
     "@modelcontextprotocol/sdk": "latest",
     "uuid": "latest"
   },

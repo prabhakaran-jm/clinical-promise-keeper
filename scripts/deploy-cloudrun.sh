@@ -22,7 +22,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --cpu 1 \
   --min-instances 0 \
   --max-instances 3 \
-  --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID,GCP_LOCATION=$REGION,GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}" \
+  --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID,GCP_LOCATION=$REGION,GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.1-flash-lite-preview}" \
   --timeout 300
 
 echo "Deployment complete!"
