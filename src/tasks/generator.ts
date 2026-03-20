@@ -100,17 +100,33 @@ export function generateTasks(patientId: string, unkeptPromises: unknown[]): Fhi
 
 export function generateCommunicationRequests(
   patientId: string,
-  unkeptPromises: PromiseStatus[]
+  unkeptPromises: unknown[]
 ): FhirCommunicationRequest[] {
-  return unkeptPromises.map((status) => ({
-    resourceType: "CommunicationRequest",
-    status: "draft",
-    subject: { reference: `Patient/${patientId}` },
-    authoredOn: new Date().toISOString(),
-    payload: [
-      {
-        contentString: `Unkept clinical promise detected: ${status.promise.description}. Due window ${status.promise.timeframe.earliest} to ${status.promise.timeframe.latest}.`,
-      },
-    ],
-  }));
+  return unkeptPromises.map((item) => {
+    if (isFullPromiseStatus(item)) {
+      return {
+        resourceType: "CommunicationRequest" as const,
+        status: "draft" as const,
+        subject: { reference: `Patient/${patientId}` },
+        authoredOn: new Date().toISOString(),
+        payload: [
+          {
+            contentString: `Unkept clinical promise detected: ${item.promise.description}. Due window ${item.promise.timeframe.earliest} to ${item.promise.timeframe.latest}.`,
+          },
+        ],
+      };
+    }
+    const simplified = item as SimplifiedTask;
+    return {
+      resourceType: "CommunicationRequest" as const,
+      status: "draft" as const,
+      subject: { reference: `Patient/${patientId}` },
+      authoredOn: new Date().toISOString(),
+      payload: [
+        {
+          contentString: `Unkept clinical promise detected: ${simplified.description ?? simplified.title ?? "Unknown"}. Due by ${simplified.dueDate ?? "unknown"}.`,
+        },
+      ],
+    };
+  });
 }

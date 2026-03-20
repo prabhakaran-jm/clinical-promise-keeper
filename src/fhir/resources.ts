@@ -69,10 +69,10 @@ export interface FhirTask {
   code: { coding: Array<{ system: string; code: string; display: string }> };
   description: string;
   for: { reference: string };
-  focus: { reference: string };
+  focus?: { reference: string };
   authoredOn: string;
   restriction: { period: { start: string; end: string } };
-  input: Array<{ type: { text: string }; valueString: string }>;
+  input?: Array<{ type: { text: string }; valueString: string }>;
 }
 
 export interface FhirCommunicationRequest {
