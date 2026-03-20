@@ -1,3 +1,15 @@
+/**
+ * MCP Server definition using @modelcontextprotocol/sdk.
+ *
+ * NOTE: The active HTTP entry point is src/index.ts which handles JSON-RPC
+ * directly.  This module is retained so the project can be wired to the
+ * official MCP SDK transport in the future (e.g. stdio, or when Prompt
+ * Opinion supports session-based Streamable HTTP).
+ *
+ * Tool schemas defined here are the canonical source and are mirrored in
+ * the TOOL_DEFINITIONS constant inside src/index.ts.
+ */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { extractPromisesTool } from "./tools/extract-promises.js";
 import { checkPromisesTool } from "./tools/check-promises.js";
@@ -8,11 +20,11 @@ type ToolResponse = {
   content: Array<{ type: "text"; text: string }>;
 };
 
-const NOT_IMPLEMENTED_RESPONSE: ToolResponse = {
-  content: [{ type: "text", text: "Not implemented yet" }],
-};
+// ---------------------------------------------------------------------------
+// Canonical tool input schemas (Section 8 of PRD)
+// ---------------------------------------------------------------------------
 
-const extractPromisesSchema = {
+export const extractPromisesSchema = {
   type: "object",
   properties: {
     patientId: {
@@ -36,7 +48,7 @@ const extractPromisesSchema = {
   required: ["noteDate"],
 } as const;
 
-const checkPromisesSchema = {
+export const checkPromisesSchema = {
   type: "object",
   properties: {
     patientId: {
@@ -52,7 +64,7 @@ const checkPromisesSchema = {
   required: ["promises"],
 } as const;
 
-const generateTasksSchema = {
+export const generateTasksSchema = {
   type: "object",
   properties: {
     patientId: {
@@ -75,7 +87,7 @@ const generateTasksSchema = {
   required: ["unkeptPromises"],
 } as const;
 
-const getPromiseSummarySchema = {
+export const getPromiseSummarySchema = {
   type: "object",
   properties: {
     patientId: {
@@ -103,37 +115,33 @@ const getPromiseSummarySchema = {
   },
 } as const;
 
-function registerToolStub(
-  server: McpServer,
-  name: string,
-  description: string,
-  inputSchema: unknown
-): void {
-  const handler = async (): Promise<ToolResponse> => NOT_IMPLEMENTED_RESPONSE;
-  (server as unknown as {
-    registerTool: (
-      toolName: string,
-      config: { description: string; inputSchema: unknown },
-      callback: () => Promise<ToolResponse>
-    ) => void;
-  }).registerTool(
-    name,
-    {
-      description,
-      inputSchema,
-    },
-    handler
-  );
+// ---------------------------------------------------------------------------
+// Server factory
+// ---------------------------------------------------------------------------
+
+type RegisterToolFn = (
+  toolName: string,
+  config: { description: string; inputSchema: unknown },
+  callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
+) => void;
+
+function reg(server: McpServer): RegisterToolFn {
+  return (server as unknown as { registerTool: RegisterToolFn }).registerTool.bind(server);
 }
 
-function registerExtractPromisesTool(server: McpServer): void {
-  (server as unknown as {
-    registerTool: (
-      toolName: string,
-      config: { description: string; inputSchema: unknown },
-      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
-    ) => void;
-  }).registerTool(
+export function createMcpServer(): McpServer {
+  const server = new McpServer(
+    { name: "clinical-promise-keeper", version: "0.1.0" },
+    {
+      capabilities: {
+        experimental: { fhir_context_required: { value: true } },
+      },
+    }
+  );
+
+  const register = reg(server);
+
+  register(
     "extract_promises",
     {
       description:
@@ -142,25 +150,12 @@ function registerExtractPromisesTool(server: McpServer): void {
     },
     async (args, extra) =>
       extractPromisesTool(
-        (args ?? {}) as {
-          patientId?: string;
-          documentReferenceId?: string;
-          noteText?: string;
-          noteDate?: string;
-        },
+        (args ?? {}) as { patientId?: string; documentReferenceId?: string; noteText?: string; noteDate?: string },
         extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
       )
   );
-}
 
-function registerCheckPromisesTool(server: McpServer): void {
-  (server as unknown as {
-    registerTool: (
-      toolName: string,
-      config: { description: string; inputSchema: unknown },
-      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
-    ) => void;
-  }).registerTool(
+  register(
     "check_promises",
     {
       description:
@@ -169,23 +164,12 @@ function registerCheckPromisesTool(server: McpServer): void {
     },
     async (args, extra) =>
       checkPromisesTool(
-        (args ?? {}) as {
-          patientId?: string;
-          promises?: import("./promises/types.js").ClinicalPromise[];
-        },
+        (args ?? {}) as { patientId?: string; promises?: import("./promises/types.js").ClinicalPromise[] },
         extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
       )
   );
-}
 
-function registerGenerateTasksTool(server: McpServer): void {
-  (server as unknown as {
-    registerTool: (
-      toolName: string,
-      config: { description: string; inputSchema: unknown },
-      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
-    ) => void;
-  }).registerTool(
+  register(
     "generate_tasks",
     {
       description:
@@ -194,24 +178,12 @@ function registerGenerateTasksTool(server: McpServer): void {
     },
     async (args, extra) =>
       generateTasksTool(
-        (args ?? {}) as {
-          patientId?: string;
-          unkeptPromises?: import("./promises/types.js").PromiseStatus[];
-          writeback?: boolean;
-        },
+        (args ?? {}) as { patientId?: string; unkeptPromises?: import("./promises/types.js").PromiseStatus[]; writeback?: boolean },
         extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
       )
   );
-}
 
-function registerGetPromiseSummaryTool(server: McpServer): void {
-  (server as unknown as {
-    registerTool: (
-      toolName: string,
-      config: { description: string; inputSchema: unknown },
-      callback: (args: unknown, extra: unknown) => Promise<ToolResponse>
-    ) => void;
-  }).registerTool(
+  register(
     "get_promise_summary",
     {
       description:
@@ -224,27 +196,6 @@ function registerGetPromiseSummaryTool(server: McpServer): void {
         extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
       )
   );
-}
-
-export function createMcpServer(): McpServer {
-  const server = new McpServer(
-    {
-      name: "clinical-promise-keeper",
-      version: "0.1.0",
-    },
-    {
-      capabilities: {
-        experimental: {
-          fhir_context_required: { value: true },
-        },
-      },
-    }
-  );
-
-  registerExtractPromisesTool(server);
-  registerCheckPromisesTool(server);
-  registerGenerateTasksTool(server);
-  registerGetPromiseSummaryTool(server);
 
   return server;
 }

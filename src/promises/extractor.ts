@@ -134,6 +134,7 @@ export async function extractPromises(
         referenceDate: noteDate,
       },
       confidence,
+      confidenceLevel: confidence >= 0.8 ? "high" : "medium",
     });
   }
 

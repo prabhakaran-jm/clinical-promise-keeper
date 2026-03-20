@@ -172,7 +172,10 @@ async function handleMcpPost(req: IncomingMessage, res: ServerResponse): Promise
         id: message.id,
         result: {
           protocolVersion: "2025-03-26",
-          capabilities: { tools: { listChanged: false } },
+          capabilities: {
+            tools: { listChanged: false },
+            experimental: { fhir_context_required: { value: true } },
+          },
           serverInfo: { name: "clinical-promise-keeper", version: "0.1.0" },
         },
       });

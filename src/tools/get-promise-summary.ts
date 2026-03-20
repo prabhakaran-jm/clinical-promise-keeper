@@ -3,7 +3,7 @@ import { FhirClient } from "../fhir/client.js";
 import { findDocumentReferences } from "../fhir/queries.js";
 import { extractPromises } from "../promises/extractor.js";
 import { checkPromises } from "../promises/checker.js";
-import { generateTasks } from "../tasks/generator.js";
+import { generateTasks, generateCommunicationRequests } from "../tasks/generator.js";
 import { getContext } from "../sharp/context.js";
 import type { ClinicalPromise } from "../promises/types.js";
 
@@ -89,6 +89,7 @@ export async function getPromiseSummaryTool(
     const statuses = await checkPromises(client, allPromises);
     const unkept = statuses.filter((status) => status.status === "unkept");
     const tasks = generateTasks(patientId, unkept);
+    const communications = generateCommunicationRequests(patientId, unkept);
 
     const summary = {
       patientId,
@@ -99,6 +100,7 @@ export async function getPromiseSummaryTool(
       pending: statuses.filter((status) => status.status === "pending").length,
       unkeptDetails: unkept,
       generatedTasks: tasks,
+      generatedCommunications: communications,
       checkedAt: new Date().toISOString(),
     };
 

@@ -18,6 +18,8 @@ export interface ClinicalPromise {
     referenceDate: string;
   };
   confidence: number;
+  /** "high" (>=0.8), "medium" (0.3–0.8), derived from confidence score */
+  confidenceLevel: "high" | "medium";
 }
 
 export interface PromiseStatus {
