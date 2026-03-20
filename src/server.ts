@@ -85,7 +85,20 @@ const getPromiseSummarySchema = {
     lookbackDays: {
       type: "number",
       default: 90,
-      description: "How far back to search for clinical notes (in days).",
+      description: "How far back to search for clinical notes (in days). Used only when notes are not provided.",
+    },
+    notes: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          noteText: { type: "string", description: "The clinical note text." },
+          noteDate: { type: "string", format: "date", description: "Date of the note (ISO format)." },
+        },
+        required: ["noteText", "noteDate"],
+      },
+      description:
+        "Clinical notes to analyze directly. If provided, skips FHIR DocumentReference search. Use this to pass notes obtained from GetPatientDocuments or other sources.",
     },
   },
 } as const;
@@ -207,7 +220,7 @@ function registerGetPromiseSummaryTool(server: McpServer): void {
     },
     async (args, extra) =>
       getPromiseSummaryTool(
-        (args ?? {}) as { patientId?: string; lookbackDays?: number },
+        (args ?? {}) as { patientId?: string; lookbackDays?: number; notes?: Array<{ noteText: string; noteDate: string }> },
         extra as { requestInfo?: { headers: Record<string, string | string[] | undefined> } }
       )
   );

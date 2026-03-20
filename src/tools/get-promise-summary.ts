@@ -7,9 +7,15 @@ import { generateTasks } from "../tasks/generator.js";
 import { getContext } from "../sharp/context.js";
 import type { ClinicalPromise } from "../promises/types.js";
 
+type NoteInput = {
+  noteText: string;
+  noteDate: string;
+};
+
 type SummaryInput = {
   patientId?: string;
   lookbackDays?: number;
+  notes?: NoteInput[];
 };
 
 type ToolExtra = {
@@ -46,26 +52,38 @@ export async function getPromiseSummaryTool(
     const patientId = input.patientId ?? context.patientId;
     const lookbackDays = input.lookbackDays ?? 90;
 
-    const docs = await findDocumentReferences(client, patientId, undefined, isoDateDaysAgo(lookbackDays));
     const allPromises: ClinicalPromise[] = [];
+    let analyzedNotes = 0;
 
-    for (const doc of docs) {
-      const noteText =
-        decodeBase64(doc.content?.[0]?.attachment?.data) ??
-        doc.description ??
-        doc.content?.[0]?.attachment?.title;
-      if (!noteText) {
-        continue;
+    if (input.notes && input.notes.length > 0) {
+      // Use directly provided notes
+      for (const note of input.notes) {
+        if (!note.noteText?.trim()) continue;
+        const noteDate = note.noteDate ?? new Date().toISOString().slice(0, 10);
+        const extracted = await extractPromises(note.noteText, noteDate, patientId);
+        allPromises.push(...extracted);
+        analyzedNotes++;
       }
+    } else {
+      // Fall back to FHIR DocumentReference search
+      const docs = await findDocumentReferences(client, patientId, undefined, isoDateDaysAgo(lookbackDays));
+      for (const doc of docs) {
+        const noteText =
+          decodeBase64(doc.content?.[0]?.attachment?.data) ??
+          doc.description ??
+          doc.content?.[0]?.attachment?.title;
+        if (!noteText) continue;
 
-      const noteDate = doc.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
-      const extracted = await extractPromises(noteText, noteDate, patientId);
-      allPromises.push(
-        ...extracted.map((promise) => ({
-          ...promise,
-          sourceDocumentId: doc.id ?? promise.sourceDocumentId,
-        }))
-      );
+        const noteDate = doc.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+        const extracted = await extractPromises(noteText, noteDate, patientId);
+        allPromises.push(
+          ...extracted.map((promise) => ({
+            ...promise,
+            sourceDocumentId: doc.id ?? promise.sourceDocumentId,
+          }))
+        );
+        analyzedNotes++;
+      }
     }
 
     const statuses = await checkPromises(client, allPromises);
@@ -74,7 +92,7 @@ export async function getPromiseSummaryTool(
 
     const summary = {
       patientId,
-      analyzedNotes: docs.length,
+      analyzedNotes,
       totalPromises: statuses.length,
       kept: statuses.filter((status) => status.status === "kept").length,
       unkept: unkept.length,
