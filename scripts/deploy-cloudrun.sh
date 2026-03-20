@@ -3,7 +3,8 @@
 set -e
 
 PROJECT_ID="${GCP_PROJECT_ID:-agent-assemble-end-game}"
-REGION="${GCP_LOCATION:-us-central1}"
+REGION="${CLOUD_RUN_REGION:-us-central1}"
+GENAI_LOCATION="${GCP_LOCATION:-global}"
 SERVICE_NAME="clinical-promise-keeper"
 IMAGE="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
@@ -22,7 +23,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --cpu 1 \
   --min-instances 0 \
   --max-instances 3 \
-  --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID,GCP_LOCATION=$REGION,GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash-lite}" \
+  --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID,GCP_LOCATION=$GENAI_LOCATION,GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.1-flash-lite-preview}" \
   --timeout 300
 
 echo "Deployment complete!"
