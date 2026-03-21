@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Promise Keeper</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a3d5c 0%, #1a6b8a 50%, #0a3d5c 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .slide {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      max-width: 960px;
+    }
+    .eyebrow {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      opacity: 0.6;
+      margin-bottom: 24px;
+    }
+    .stat-line1 {
+      font-size: 72px;
+      font-weight: bold;
+      color: white;
+      line-height: 1.1;
+      opacity: 0;
+      animation: fadeIn 1.5s ease forwards;
+    }
+    .stat-line2 {
+      font-size: 72px;
+      font-weight: bold;
+      color: #ff6b6b;
+      line-height: 1.1;
+      margin-top: 8px;
+      opacity: 0;
+      animation: slideUp 1s ease 0.5s forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.3);
+      margin: 32px auto;
+      border: none;
+    }
+    .subtitle {
+      font-size: 20px;
+      opacity: 0.7;
+      max-width: 640px;
+      line-height: 1.5;
+    }
+    .badges {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 8px 20px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <p class="eyebrow">THE PROBLEM</p>
+    <p class="stat-line1">50–60% of clinical follow-ups</p>
+    <p class="stat-line2">are never completed</p>
+    <hr class="divider" />
+    <p class="subtitle">Promises made in clinical notes — labs, referrals, imaging — slip through the cracks</p>
+    <div class="badges">
+      <span class="badge">🏥 MCP-Powered</span>
+      <span class="badge">🤝 A2A Multi-Agent</span>
+      <span class="badge">🔥 FHIR R4 Native</span>
+    </div>
+  </div>
+</body>
+</html>

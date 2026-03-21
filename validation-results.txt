@@ -29,204 +29,205 @@ DETAILED RESULTS
 ======================================================================
 
 [pc-01] primary-care - Expected: 4, Extracted: 4, TP: 4, FP: 0, FN: 0 | P: 100% R: 100%
-  [MATCH/strict] "Repeat lipid panel to monitor LDL levels after starting atorvastatin" (lab) <-> "Recheck lipid panel" (lab)
-  [MATCH/strict] "Referral to gastroenterology for screening colonoscopy" (appointment) <-> "Colonoscopy referral" (appointment)
-  [MATCH/strict] "Screening mammogram" (imaging_document) <-> "Schedule mammogram" (imaging_document)
-  [MATCH/strict] "Return visit for routine follow-up" (appointment) <-> "Follow-up visit" (appointment)
-  [MATCH/flexible] "Repeat lipid panel to monitor LDL levels after starting atorvastatin" (lab) <-> "Recheck lipid panel" (lab)
-  [MATCH/flexible] "Referral to gastroenterology for screening colonoscopy" (appointment) <-> "Colonoscopy referral" (appointment)
-  [MATCH/flexible] "Screening mammogram" (imaging_document) <-> "Schedule mammogram" (imaging_document)
-  [MATCH/flexible] "Return visit for routine follow-up" (appointment) <-> "Follow-up visit" (appointment)
+  [MATCH/strict] "Recheck lipid panel to assess response to new atorvastatin therapy" (lab) <-> "Recheck lipid panel" (lab)
+  [MATCH/strict] "Referral to Gastroenterology for screening colonoscopy" (appointment) <-> "Colonoscopy referral" (appointment)
+  [MATCH/strict] "Order for screening mammogram to be scheduled" (imaging_document) <-> "Schedule mammogram" (imaging_document)
+  [MATCH/strict] "Follow-up visit for general management and chronic condition monitoring" (appointment) <-> "Follow-up visit" (appointment)
+  [MATCH/flexible] "Recheck lipid panel to assess response to new atorvastatin therapy" (lab) <-> "Recheck lipid panel" (lab)
+  [MATCH/flexible] "Referral to Gastroenterology for screening colonoscopy" (appointment) <-> "Colonoscopy referral" (appointment)
+  [MATCH/flexible] "Order for screening mammogram to be scheduled" (imaging_document) <-> "Schedule mammogram" (imaging_document)
+  [MATCH/flexible] "Follow-up visit for general management and chronic condition monitoring" (appointment) <-> "Follow-up visit" (appointment)
 
 [pc-02] primary-care - Expected: 3, Extracted: 3, TP: 3, FP: 0, FN: 0 | P: 100% R: 100%
-  [MATCH/strict] "Recheck BMP and potassium to monitor renal function following medication adjustment" (lab) <-> "Recheck BMP and potassium" (lab)
+  [MATCH/strict] "Recheck basic metabolic panel and potassium to monitor renal function after medication adjustment" (lab) <-> "Recheck BMP and potassium" (lab)
   [MATCH/strict] "Referral to ophthalmology for annual diabetic eye exam" (appointment) <-> "Ophthalmology referral" (appointment)
-  [MATCH/strict] "Follow-up visit for hypertension and diabetes management" (appointment) <-> "Return visit" (appointment)
-  [MATCH/flexible] "Recheck BMP and potassium to monitor renal function following medication adjustment" (lab) <-> "Recheck BMP and potassium" (lab)
+  [MATCH/strict] "Return visit for hypertension and diabetes management" (appointment) <-> "Return visit" (appointment)
+  [MATCH/flexible] "Recheck basic metabolic panel and potassium to monitor renal function after medication adjustment" (lab) <-> "Recheck BMP and potassium" (lab)
   [MATCH/flexible] "Referral to ophthalmology for annual diabetic eye exam" (appointment) <-> "Ophthalmology referral" (appointment)
-  [MATCH/flexible] "Follow-up visit for hypertension and diabetes management" (appointment) <-> "Return visit" (appointment)
+  [MATCH/flexible] "Return visit for hypertension and diabetes management" (appointment) <-> "Return visit" (appointment)
 
-[pc-03] primary-care - Expected: 3, Extracted: 3, TP: 2, FP: 1, FN: 1 | P: 67% R: 67%
-  [MATCH/strict] "Follow-up visit to evaluate response to sertraline initiation" (appointment) <-> "Return visit" (appointment)
-  [MATCH/strict] "Order baseline blood work including CBC, CMP, TSH, and lipid panel" (lab) <-> "Baseline lab panel (CBC, CMP, TSH, lipid)" (lab)
-  [FP/strict] "Routine return follow-up appointment" (appointment) - not in expected
-  [FN/strict] "Follow-up for medication response" (appointment) - not extracted
-  [MATCH/flexible] "Follow-up visit to evaluate response to sertraline initiation" (appointment) <-> "Return visit" (appointment)
-  [MATCH/flexible] "Order baseline blood work including CBC, CMP, TSH, and lipid panel" (lab) <-> "Baseline lab panel (CBC, CMP, TSH, lipid)" (lab)
-  [FP/flexible] "Routine return follow-up appointment" (appointment) - not in expected
-  [FN/flexible] "Follow-up for medication response" (appointment) - not extracted
+[pc-03] primary-care - Expected: 3, Extracted: 3, TP: 3, FP: 0, FN: 0 | P: 100% R: 100%
+  [MATCH/strict] "Follow up visit for anxiety medication response assessment" (appointment) <-> "Follow-up for medication response" (appointment)
+  [MATCH/strict] "Baseline laboratory testing including CBC, CMP, TSH, and lipid panel" (lab) <-> "Baseline lab panel (CBC, CMP, TSH, lipid)" (lab)
+  [MATCH/strict] "Follow-up appointment for established care and medication management" (appointment) <-> "Return visit" (appointment)
+  [MATCH/flexible] "Follow up visit for anxiety medication response assessment" (appointment) <-> "Follow-up for medication response" (appointment)
+  [MATCH/flexible] "Baseline laboratory testing including CBC, CMP, TSH, and lipid panel" (lab) <-> "Baseline lab panel (CBC, CMP, TSH, lipid)" (lab)
+  [MATCH/flexible] "Follow-up appointment for established care and medication management" (appointment) <-> "Return visit" (appointment)
 
-[pc-04] primary-care - Expected: 4, Extracted: 4, TP: 4, FP: 0, FN: 0 | P: 100% R: 100%
-  [FP/strict] "Pulmonary function test to assess lung function decline" (lab) - not in expected
-  [MATCH/strict] "Complete blood count and basic metabolic panel" (lab) <-> "Check CBC and BMP" (lab)
-  [MATCH/strict] "Schedule second dose of Shingrix vaccine" (appointment) <-> "Shingrix dose 2" (appointment)
-  [MATCH/strict] "Follow-up visit for COPD management" (appointment) <-> "Follow-up visit" (appointment)
+[pc-04] primary-care - Expected: 4, Extracted: 4, TP: 2, FP: 2, FN: 2 | P: 50% R: 50%
+  [FP/strict] "Pulmonary function test to assess COPD progression" (lab) - not in expected
+  [FP/strict] "Routine blood work to monitor systemic status" (lab) - not in expected
+  [MATCH/strict] "Administration of second dose of Shingrix vaccine" (appointment) <-> "Shingrix dose 2" (appointment)
+  [MATCH/strict] "Follow-up visit for COPD symptom review" (appointment) <-> "Follow-up visit" (appointment)
   [FN/strict] "PFTs to reassess lung function" (imaging_document) - not extracted
-  [MATCH/flexible] "Pulmonary function test to assess lung function decline" (lab) <-> "PFTs to reassess lung function" (imaging_document) [class-flex]
-  [MATCH/flexible] "Complete blood count and basic metabolic panel" (lab) <-> "Check CBC and BMP" (lab)
-  [MATCH/flexible] "Schedule second dose of Shingrix vaccine" (appointment) <-> "Shingrix dose 2" (appointment)
-  [MATCH/flexible] "Follow-up visit for COPD management" (appointment) <-> "Follow-up visit" (appointment)
+  [FN/strict] "Check CBC and BMP" (lab) - not extracted
+  [FP/flexible] "Pulmonary function test to assess COPD progression" (lab) - not in expected
+  [FP/flexible] "Routine blood work to monitor systemic status" (lab) - not in expected
+  [MATCH/flexible] "Administration of second dose of Shingrix vaccine" (appointment) <-> "Shingrix dose 2" (appointment)
+  [MATCH/flexible] "Follow-up visit for COPD symptom review" (appointment) <-> "Follow-up visit" (appointment)
+  [FN/flexible] "PFTs to reassess lung function" (imaging_document) - not extracted
+  [FN/flexible] "Check CBC and BMP" (lab) - not extracted
 
 [pc-05] primary-care - Expected: 3, Extracted: 2, TP: 2, FP: 0, FN: 1 | P: 100% R: 67%
-  [MATCH/strict] "Administer second dose of Hepatitis A vaccine" (appointment) <-> "Hep A dose 2" (appointment)
-  [MATCH/strict] "Routine 15-month well child follow-up" (appointment) <-> "Well child check at 15 months" (appointment)
+  [MATCH/strict] "Schedule vaccination appointment for second dose of Hepatitis A vaccine" (appointment) <-> "Hep A dose 2" (appointment)
+  [MATCH/strict] "Follow-up well child check appointment at 15 months of age" (appointment) <-> "Well child check at 15 months" (appointment)
   [FN/strict] "Lead level and CBC" (lab) - not extracted
-  [MATCH/flexible] "Administer second dose of Hepatitis A vaccine" (appointment) <-> "Hep A dose 2" (appointment)
-  [MATCH/flexible] "Routine 15-month well child follow-up" (appointment) <-> "Well child check at 15 months" (appointment)
+  [MATCH/flexible] "Schedule vaccination appointment for second dose of Hepatitis A vaccine" (appointment) <-> "Hep A dose 2" (appointment)
+  [MATCH/flexible] "Follow-up well child check appointment at 15 months of age" (appointment) <-> "Well child check at 15 months" (appointment)
   [FN/flexible] "Lead level and CBC" (lab) - not extracted
 
 [card-01] cardiology - Expected: 4, Extracted: 4, TP: 3, FP: 1, FN: 1 | P: 75% R: 75%
-  [MATCH/strict] "Echocardiogram to assess cardiac structure and function" (imaging_document) <-> "Echocardiogram" (imaging_document)
-  [MATCH/strict] "Thyroid Stimulating Hormone lab order to evaluate for hyperthyroidism" (lab) <-> "TSH lab" (lab)
-  [FP/strict] "48-hour Holter monitor for rhythm assessment" (lab) - not in expected
+  [MATCH/strict] "Echocardiogram to assess cardiac structure and function for atrial fibrillation" (imaging_document) <-> "Echocardiogram" (imaging_document)
+  [MATCH/strict] "Thyroid stimulating hormone blood test to evaluate atrial fibrillation etiology" (lab) <-> "TSH lab" (lab)
+  [MATCH/strict] "48-hour Holter monitoring for rate control assessment" (imaging_document) <-> "Holter monitor" (imaging_document)
   [FP/strict] "Follow-up visit to review echocardiogram and Holter monitor results" (appointment) - not in expected
-  [FN/strict] "Holter monitor" (imaging_document) - not extracted
   [FN/strict] "Cardiology follow-up" (appointment) - not extracted
-  [MATCH/flexible] "Echocardiogram to assess cardiac structure and function" (imaging_document) <-> "Echocardiogram" (imaging_document)
-  [MATCH/flexible] "Thyroid Stimulating Hormone lab order to evaluate for hyperthyroidism" (lab) <-> "TSH lab" (lab)
-  [MATCH/flexible] "48-hour Holter monitor for rhythm assessment" (lab) <-> "Holter monitor" (imaging_document) [class-flex]
+  [MATCH/flexible] "Echocardiogram to assess cardiac structure and function for atrial fibrillation" (imaging_document) <-> "Echocardiogram" (imaging_document)
+  [MATCH/flexible] "Thyroid stimulating hormone blood test to evaluate atrial fibrillation etiology" (lab) <-> "TSH lab" (lab)
+  [MATCH/flexible] "48-hour Holter monitoring for rate control assessment" (imaging_document) <-> "Holter monitor" (imaging_document)
   [FP/flexible] "Follow-up visit to review echocardiogram and Holter monitor results" (appointment) - not in expected
   [FN/flexible] "Cardiology follow-up" (appointment) - not extracted
 
 [card-02] cardiology - Expected: 4, Extracted: 4, TP: 4, FP: 0, FN: 0 | P: 100% R: 100%
-  [MATCH/strict] "Recheck lipid panel to monitor CAD management" (lab) <-> "Recheck lipid panel" (lab)
-  [MATCH/strict] "Repeat echocardiogram to evaluate left ventricular function/ejection fraction" (imaging_document) <-> "Repeat echocardiogram" (imaging_document)
-  [MATCH/strict] "Stress test to assess cardiac function 6 months post-MI" (imaging_document) <-> "Stress test" (imaging_document)
+  [MATCH/strict] "Recheck lipid panel to monitor cardiovascular risk status" (lab) <-> "Recheck lipid panel" (lab)
+  [MATCH/strict] "Repeat echocardiogram to reassess left ventricular ejection fraction" (imaging_document) <-> "Repeat echocardiogram" (imaging_document)
+  [MATCH/strict] "Cardiac stress test to evaluate exercise tolerance and ischemia" (imaging_document) <-> "Stress test" (imaging_document)
   [MATCH/strict] "Follow-up visit with cardiology" (appointment) <-> "Cardiology follow-up" (appointment)
-  [MATCH/flexible] "Recheck lipid panel to monitor CAD management" (lab) <-> "Recheck lipid panel" (lab)
-  [MATCH/flexible] "Repeat echocardiogram to evaluate left ventricular function/ejection fraction" (imaging_document) <-> "Repeat echocardiogram" (imaging_document)
-  [MATCH/flexible] "Stress test to assess cardiac function 6 months post-MI" (imaging_document) <-> "Stress test" (imaging_document)
+  [MATCH/flexible] "Recheck lipid panel to monitor cardiovascular risk status" (lab) <-> "Recheck lipid panel" (lab)
+  [MATCH/flexible] "Repeat echocardiogram to reassess left ventricular ejection fraction" (imaging_document) <-> "Repeat echocardiogram" (imaging_document)
+  [MATCH/flexible] "Cardiac stress test to evaluate exercise tolerance and ischemia" (imaging_document) <-> "Stress test" (imaging_document)
   [MATCH/flexible] "Follow-up visit with cardiology" (appointment) <-> "Cardiology follow-up" (appointment)
 
 [card-03] cardiology - Expected: 3, Extracted: 4, TP: 2, FP: 2, FN: 1 | P: 50% R: 67%
-  [MATCH/strict] "Check serum potassium and creatinine levels to monitor for potential adverse effects of newly prescribed spironolactone" (lab) <-> "Check potassium and creatinine" (lab)
-  [MATCH/strict] "Referral to Electrophysiology specialist for Implantable Cardioverter-Defibrillator (ICD) evaluation" (appointment) <-> "Electrophysiology referral for ICD" (appointment)
-  [FP/strict] "Follow-up visit and repeat Brain Natriuretic Peptide lab test" (appointment) - not in expected
-  [FP/strict] "Repeat Brain Natriuretic Peptide lab test to trend heart failure status" (lab) - not in expected
+  [MATCH/strict] "Monitor serum potassium and creatinine levels due to initiation of spironolactone" (lab) <-> "Check potassium and creatinine" (lab)
+  [MATCH/strict] "Referral to electrophysiology for potential ICD placement due to persistent low EF" (appointment) <-> "Electrophysiology referral for ICD" (appointment)
+  [FP/strict] "Follow-up visit for heart failure management" (appointment) - not in expected
+  [FP/strict] "Repeat B-type natriuretic peptide test for heart failure monitoring" (lab) - not in expected
   [FN/strict] "Follow-up with repeat BNP" (appointment) - not extracted
-  [MATCH/flexible] "Check serum potassium and creatinine levels to monitor for potential adverse effects of newly prescribed spironolactone" (lab) <-> "Check potassium and creatinine" (lab)
-  [MATCH/flexible] "Referral to Electrophysiology specialist for Implantable Cardioverter-Defibrillator (ICD) evaluation" (appointment) <-> "Electrophysiology referral for ICD" (appointment)
-  [FP/flexible] "Follow-up visit and repeat Brain Natriuretic Peptide lab test" (appointment) - not in expected
-  [FP/flexible] "Repeat Brain Natriuretic Peptide lab test to trend heart failure status" (lab) - not in expected
+  [MATCH/flexible] "Monitor serum potassium and creatinine levels due to initiation of spironolactone" (lab) <-> "Check potassium and creatinine" (lab)
+  [MATCH/flexible] "Referral to electrophysiology for potential ICD placement due to persistent low EF" (appointment) <-> "Electrophysiology referral for ICD" (appointment)
+  [FP/flexible] "Follow-up visit for heart failure management" (appointment) - not in expected
+  [FP/flexible] "Repeat B-type natriuretic peptide test for heart failure monitoring" (lab) - not in expected
   [FN/flexible] "Follow-up with repeat BNP" (appointment) - not extracted
 
-[onc-01] oncology - Expected: 6, Extracted: 6, TP: 6, FP: 0, FN: 0 | P: 100% R: 100%
-  [MATCH/strict] "Order bilateral diagnostic mammogram for breast cancer surveillance" (imaging_document) <-> "Bilateral diagnostic mammogram" (imaging_document)
-  [MATCH/strict] "Order CA 27-29 and CBC for cancer biomarker trending" (lab) <-> "CA 27-29 and CBC labs" (lab)
-  [MATCH/strict] "Schedule DEXA scan for bone density assessment due to tamoxifen use" (imaging_document) <-> "DEXA scan" (imaging_document)
-  [MATCH/strict] "Coordinate annual gynecologic exam with OB/GYN" (appointment) <-> "GYN annual exam coordination" (appointment)
-  [MATCH/strict] "Referral to oncology social worker or support group for anxiety" (appointment) <-> "Oncology social worker referral" (appointment)
-  [MATCH/strict] "Follow-up oncology appointment for breast cancer surveillance" (appointment) <-> "Oncology follow-up" (appointment)
-  [MATCH/flexible] "Order bilateral diagnostic mammogram for breast cancer surveillance" (imaging_document) <-> "Bilateral diagnostic mammogram" (imaging_document)
-  [MATCH/flexible] "Order CA 27-29 and CBC for cancer biomarker trending" (lab) <-> "CA 27-29 and CBC labs" (lab)
-  [MATCH/flexible] "Schedule DEXA scan for bone density assessment due to tamoxifen use" (imaging_document) <-> "DEXA scan" (imaging_document)
-  [MATCH/flexible] "Coordinate annual gynecologic exam with OB/GYN" (appointment) <-> "GYN annual exam coordination" (appointment)
-  [MATCH/flexible] "Referral to oncology social worker or support group for anxiety" (appointment) <-> "Oncology social worker referral" (appointment)
-  [MATCH/flexible] "Follow-up oncology appointment for breast cancer surveillance" (appointment) <-> "Oncology follow-up" (appointment)
+[onc-01] oncology - Expected: 6, Extracted: 6, TP: 5, FP: 1, FN: 1 | P: 83% R: 83%
+  [MATCH/strict] "Bilateral diagnostic mammogram for breast cancer surveillance" (imaging_document) <-> "Bilateral diagnostic mammogram" (imaging_document)
+  [MATCH/strict] "Tumor marker CA 27-29 and Complete Blood Count for surveillance" (lab) <-> "CA 27-29 and CBC labs" (lab)
+  [MATCH/strict] "DEXA scan for bone density monitoring" (imaging_document) <-> "DEXA scan" (imaging_document)
+  [MATCH/strict] "Referral or coordination for annual gynecologic examination" (appointment) <-> "GYN annual exam coordination" (appointment)
+  [MATCH/strict] "Referral to oncology social work services for anxiety" (appointment) <-> "Oncology social worker referral" (appointment)
+  [FP/strict] "Follow-up visit for breast cancer surveillance" (appointment) - not in expected
+  [FN/strict] "Oncology follow-up" (appointment) - not extracted
+  [MATCH/flexible] "Bilateral diagnostic mammogram for breast cancer surveillance" (imaging_document) <-> "Bilateral diagnostic mammogram" (imaging_document)
+  [MATCH/flexible] "Tumor marker CA 27-29 and Complete Blood Count for surveillance" (lab) <-> "CA 27-29 and CBC labs" (lab)
+  [MATCH/flexible] "DEXA scan for bone density monitoring" (imaging_document) <-> "DEXA scan" (imaging_document)
+  [MATCH/flexible] "Referral or coordination for annual gynecologic examination" (appointment) <-> "GYN annual exam coordination" (appointment)
+  [MATCH/flexible] "Referral to oncology social work services for anxiety" (appointment) <-> "Oncology social worker referral" (appointment)
+  [FP/flexible] "Follow-up visit for breast cancer surveillance" (appointment) - not in expected
+  [FN/flexible] "Oncology follow-up" (appointment) - not extracted
 
 [onc-02] oncology - Expected: 2, Extracted: 2, TP: 2, FP: 0, FN: 0 | P: 100% R: 100%
-  [MATCH/strict] "Repeat Low-Dose CT (LDCT) to monitor pulmonary nodule stability" (imaging_document) <-> "Repeat LDCT scan" (imaging_document)
-  [MATCH/strict] "Follow-up visit to review repeat LDCT results" (appointment) <-> "Follow-up after LDCT" (appointment)
-  [MATCH/flexible] "Repeat Low-Dose CT (LDCT) to monitor pulmonary nodule stability" (imaging_document) <-> "Repeat LDCT scan" (imaging_document)
-  [MATCH/flexible] "Follow-up visit to review repeat LDCT results" (appointment) <-> "Follow-up after LDCT" (appointment)
+  [MATCH/strict] "Repeat low-dose CT chest for pulmonary nodule surveillance" (imaging_document) <-> "Repeat LDCT scan" (imaging_document)
+  [MATCH/strict] "Follow-up visit to review results of the next LDCT scan" (appointment) <-> "Follow-up after LDCT" (appointment)
+  [MATCH/flexible] "Repeat low-dose CT chest for pulmonary nodule surveillance" (imaging_document) <-> "Repeat LDCT scan" (imaging_document)
+  [MATCH/flexible] "Follow-up visit to review results of the next LDCT scan" (appointment) <-> "Follow-up after LDCT" (appointment)
 
 [endo-01] endocrinology - Expected: 2, Extracted: 3, TP: 2, FP: 1, FN: 0 | P: 67% R: 100%
-  [MATCH/strict] "Molecular testing of thyroid FNA specimen for malignancy risk" (lab) <-> "Molecular testing on FNA specimen" (lab)
+  [MATCH/strict] "Molecular testing on FNA specimen for thyroid nodule stratification" (lab) <-> "Molecular testing on FNA specimen" (lab)
   [FP/strict] "Follow-up thyroid ultrasound if molecular testing is benign" (imaging_document) - not in expected
   [MATCH/strict] "Follow-up visit to review molecular testing results" (appointment) <-> "Follow-up for molecular results" (appointment)
-  [MATCH/flexible] "Molecular testing of thyroid FNA specimen for malignancy risk" (lab) <-> "Molecular testing on FNA specimen" (lab)
+  [MATCH/flexible] "Molecular testing on FNA specimen for thyroid nodule stratification" (lab) <-> "Molecular testing on FNA specimen" (lab)
   [FP/flexible] "Follow-up thyroid ultrasound if molecular testing is benign" (imaging_document) - not in expected
   [MATCH/flexible] "Follow-up visit to review molecular testing results" (appointment) <-> "Follow-up for molecular results" (appointment)
 
-[endo-02] endocrinology - Expected: 5, Extracted: 5, TP: 5, FP: 0, FN: 0 | P: 100% R: 100%
-  [MATCH/strict] "Recheck Hemoglobin A1c to evaluate glycemic control following insulin initiation" (lab) <-> "Recheck A1c" (lab)
-  [MATCH/strict] "Follow-up review of glucose log for insulin dose titration" (appointment) <-> "Fasting glucose log review" (appointment)
-  [MATCH/strict] "Urine microalbumin test to screen for diabetic nephropathy" (lab) <-> "Urine microalbumin" (lab)
-  [MATCH/strict] "Referral to ophthalmology for diabetic retinopathy screening" (appointment) <-> "Ophthalmology referral" (appointment)
-  [MATCH/strict] "Follow-up visit for insulin dose titration" (appointment) <-> "Follow-up for insulin adjustment" (appointment)
-  [MATCH/flexible] "Recheck Hemoglobin A1c to evaluate glycemic control following insulin initiation" (lab) <-> "Recheck A1c" (lab)
-  [MATCH/flexible] "Follow-up review of glucose log for insulin dose titration" (appointment) <-> "Fasting glucose log review" (appointment)
-  [MATCH/flexible] "Urine microalbumin test to screen for diabetic nephropathy" (lab) <-> "Urine microalbumin" (lab)
-  [MATCH/flexible] "Referral to ophthalmology for diabetic retinopathy screening" (appointment) <-> "Ophthalmology referral" (appointment)
-  [MATCH/flexible] "Follow-up visit for insulin dose titration" (appointment) <-> "Follow-up for insulin adjustment" (appointment)
+[endo-02] endocrinology - Expected: 5, Extracted: 4, TP: 4, FP: 0, FN: 1 | P: 100% R: 80%
+  [MATCH/strict] "Recheck Hemoglobin A1c to evaluate glycemic control after insulin initiation" (lab) <-> "Recheck A1c" (lab)
+  [FP/strict] "Review fasting blood glucose logs for insulin dose adjustment" (lab) - not in expected
+  [MATCH/strict] "Referral to ophthalmology for dilated eye exam" (appointment) <-> "Ophthalmology referral" (appointment)
+  [MATCH/strict] "Follow-up visit for insulin titration" (appointment) <-> "Follow-up for insulin adjustment" (appointment)
+  [FN/strict] "Fasting glucose log review" (appointment) - not extracted
+  [FN/strict] "Urine microalbumin" (lab) - not extracted
+  [MATCH/flexible] "Recheck Hemoglobin A1c to evaluate glycemic control after insulin initiation" (lab) <-> "Recheck A1c" (lab)
+  [MATCH/flexible] "Review fasting blood glucose logs for insulin dose adjustment" (lab) <-> "Fasting glucose log review" (appointment) [class-flex]
+  [MATCH/flexible] "Referral to ophthalmology for dilated eye exam" (appointment) <-> "Ophthalmology referral" (appointment)
+  [MATCH/flexible] "Follow-up visit for insulin titration" (appointment) <-> "Follow-up for insulin adjustment" (appointment)
+  [FN/flexible] "Urine microalbumin" (lab) - not extracted
 
 [surg-01] surgery - Expected: 2, Extracted: 2, TP: 0, FP: 2, FN: 2 | P: 0% R: 0%
-  [FP/strict] "Conditional order for abdominal ultrasound if pain persists" (imaging_document) - not in expected
+  [FP/strict] "Abdominal ultrasound to rule out retained stone or fluid collection" (imaging_document) - not in expected
   [FP/strict] "Final post-operative follow-up appointment" (appointment) - not in expected
   [FN/strict] "Call with pathology results" (lab) - not extracted
   [FN/strict] "Post-op follow-up" (appointment) - not extracted
-  [FP/flexible] "Conditional order for abdominal ultrasound if pain persists" (imaging_document) - not in expected
+  [FP/flexible] "Abdominal ultrasound to rule out retained stone or fluid collection" (imaging_document) - not in expected
   [FP/flexible] "Final post-operative follow-up appointment" (appointment) - not in expected
   [FN/flexible] "Call with pathology results" (lab) - not extracted
   [FN/flexible] "Post-op follow-up" (appointment) - not extracted
 
-[surg-02] surgery - Expected: 3, Extracted: 3, TP: 2, FP: 1, FN: 1 | P: 67% R: 67%
+[surg-02] surgery - Expected: 3, Extracted: 3, TP: 3, FP: 0, FN: 0 | P: 100% R: 100%
   [MATCH/strict] "Post-operative MRI to assess ACL graft incorporation" (imaging_document) <-> "MRI to assess graft" (imaging_document)
-  [FP/strict] "Follow-up visit for ACL reconstruction monitoring" (appointment) - not in expected
-  [MATCH/strict] "Obtain physical therapy progress notes from external facility" (imaging_document) <-> "Obtain PT progress notes" (imaging_document)
-  [FN/strict] "Orthopedic follow-up" (appointment) - not extracted
+  [MATCH/strict] "Routine orthopedic follow-up visit for ACL reconstruction status" (appointment) <-> "Orthopedic follow-up" (appointment)
+  [MATCH/strict] "Acquire physical therapy progress documentation for review" (imaging_document) <-> "Obtain PT progress notes" (imaging_document)
   [MATCH/flexible] "Post-operative MRI to assess ACL graft incorporation" (imaging_document) <-> "MRI to assess graft" (imaging_document)
-  [FP/flexible] "Follow-up visit for ACL reconstruction monitoring" (appointment) - not in expected
-  [MATCH/flexible] "Obtain physical therapy progress notes from external facility" (imaging_document) <-> "Obtain PT progress notes" (imaging_document)
-  [FN/flexible] "Orthopedic follow-up" (appointment) - not extracted
+  [MATCH/flexible] "Routine orthopedic follow-up visit for ACL reconstruction status" (appointment) <-> "Orthopedic follow-up" (appointment)
+  [MATCH/flexible] "Acquire physical therapy progress documentation for review" (imaging_document) <-> "Obtain PT progress notes" (imaging_document)
 
 [psych-01] psychiatry - Expected: 3, Extracted: 4, TP: 3, FP: 1, FN: 0 | P: 75% R: 100%
-  [FP/strict] "Repeat PHQ-9 and GAD-7 screening questionnaires at next visit" (lab) - not in expected
-  [MATCH/strict] "Order TSH, CBC, and Vitamin D labs to investigate fatigue" (lab) <-> "Lab workup (TSH, CBC, vitamin D)" (lab)
-  [MATCH/strict] "Obtain psychotherapy progress notes for clinical review" (imaging_document) <-> "Request therapist progress notes" (imaging_document)
-  [MATCH/strict] "Follow-up visit for medication management" (appointment) <-> "Follow-up visit" (appointment)
-  [FP/flexible] "Repeat PHQ-9 and GAD-7 screening questionnaires at next visit" (lab) - not in expected
-  [MATCH/flexible] "Order TSH, CBC, and Vitamin D labs to investigate fatigue" (lab) <-> "Lab workup (TSH, CBC, vitamin D)" (lab)
-  [MATCH/flexible] "Obtain psychotherapy progress notes for clinical review" (imaging_document) <-> "Request therapist progress notes" (imaging_document)
-  [MATCH/flexible] "Follow-up visit for medication management" (appointment) <-> "Follow-up visit" (appointment)
+  [FP/strict] "Standardized depression and anxiety screening follow-up" (lab) - not in expected
+  [MATCH/strict] "Laboratory workup to investigate etiology of fatigue" (lab) <-> "Lab workup (TSH, CBC, vitamin D)" (lab)
+  [MATCH/strict] "Obtain psychotherapy progress notes from current therapist" (imaging_document) <-> "Request therapist progress notes" (imaging_document)
+  [MATCH/strict] "Follow-up visit for medication management and screening assessment" (appointment) <-> "Follow-up visit" (appointment)
+  [FP/flexible] "Standardized depression and anxiety screening follow-up" (lab) - not in expected
+  [MATCH/flexible] "Laboratory workup to investigate etiology of fatigue" (lab) <-> "Lab workup (TSH, CBC, vitamin D)" (lab)
+  [MATCH/flexible] "Obtain psychotherapy progress notes from current therapist" (imaging_document) <-> "Request therapist progress notes" (imaging_document)
+  [MATCH/flexible] "Follow-up visit for medication management and screening assessment" (appointment) <-> "Follow-up visit" (appointment)
 
-[psych-02] psychiatry - Expected: 3, Extracted: 3, TP: 2, FP: 1, FN: 1 | P: 67% R: 67%
-  [MATCH/strict] "Recheck blood pressure, heart rate, height, and weight for medication monitoring" (lab) <-> "Recheck vitals and weight" (lab)
-  [MATCH/strict] "Baseline electrocardiogram due to family history of cardiac death" (imaging_document) <-> "ECG" (imaging_document)
-  [FP/strict] "Follow-up visit to evaluate response to methylphenidate" (appointment) - not in expected
-  [FN/strict] "Follow-up for medication response" (appointment) - not extracted
-  [MATCH/flexible] "Recheck blood pressure, heart rate, height, and weight for medication monitoring" (lab) <-> "Recheck vitals and weight" (lab)
-  [MATCH/flexible] "Baseline electrocardiogram due to family history of cardiac death" (imaging_document) <-> "ECG" (imaging_document)
-  [FP/flexible] "Follow-up visit to evaluate response to methylphenidate" (appointment) - not in expected
-  [FN/flexible] "Follow-up for medication response" (appointment) - not extracted
+[psych-02] psychiatry - Expected: 3, Extracted: 3, TP: 3, FP: 0, FN: 0 | P: 100% R: 100%
+  [MATCH/strict] "Recheck baseline vitals and weight" (lab) <-> "Recheck vitals and weight" (lab)
+  [MATCH/strict] "Electrocardiogram for cardiac screening due to family history" (imaging_document) <-> "ECG" (imaging_document)
+  [MATCH/strict] "Follow up appointment to assess medication response" (appointment) <-> "Follow-up for medication response" (appointment)
+  [MATCH/flexible] "Recheck baseline vitals and weight" (lab) <-> "Recheck vitals and weight" (lab)
+  [MATCH/flexible] "Electrocardiogram for cardiac screening due to family history" (imaging_document) <-> "ECG" (imaging_document)
+  [MATCH/flexible] "Follow up appointment to assess medication response" (appointment) <-> "Follow-up for medication response" (appointment)
 
 [edge-01] primary-care - Expected: 0, Extracted: 1, TP: 0, FP: 1, FN: 0 | P: 0% R: 100%
-  [FP/strict] "Follow-up visit if symptoms worsen or do not improve" (appointment) - not in expected
-  [FP/flexible] "Follow-up visit if symptoms worsen or do not improve" (appointment) - not in expected
+  [FP/strict] "Return visit if URI symptoms do not improve or worsen" (appointment) - not in expected
+  [FP/flexible] "Return visit if URI symptoms do not improve or worsen" (appointment) - not in expected
 
 [edge-02] primary-care - Expected: 1, Extracted: 2, TP: 1, FP: 1, FN: 0 | P: 50% R: 100%
-  [FP/strict] "Routine monthly urine drug screen for chronic opioid therapy compliance" (lab) - not in expected
-  [MATCH/strict] "Follow-up assessment for chronic pain management" (appointment) <-> "Return visit for pain assessment" (appointment)
-  [FP/flexible] "Routine monthly urine drug screen for chronic opioid therapy compliance" (lab) - not in expected
-  [MATCH/flexible] "Follow-up assessment for chronic pain management" (appointment) <-> "Return visit for pain assessment" (appointment)
+  [FP/strict] "Perform urine drug screen to monitor compliance with opioid regimen" (lab) - not in expected
+  [MATCH/strict] "Return visit for chronic pain management and prescription assessment" (appointment) <-> "Return visit for pain assessment" (appointment)
+  [FP/flexible] "Perform urine drug screen to monitor compliance with opioid regimen" (lab) - not in expected
+  [MATCH/flexible] "Return visit for chronic pain management and prescription assessment" (appointment) <-> "Return visit for pain assessment" (appointment)
 
 [edge-03] emergency-medicine - Expected: 3, Extracted: 3, TP: 2, FP: 1, FN: 1 | P: 67% R: 67%
-  [FP/strict] "Primary care provider follow-up" (appointment) - not in expected
-  [MATCH/strict] "Cardiology referral and follow-up for stress test" (appointment) <-> "Cardiology follow-up for stress test" (appointment)
-  [MATCH/strict] "Order for lipid panel and serum glucose" (lab) <-> "Outpatient lipid panel and glucose" (lab)
+  [FP/strict] "Follow-up primary care visit" (appointment) - not in expected
+  [MATCH/strict] "Referral to cardiology for stress test evaluation" (appointment) <-> "Cardiology follow-up for stress test" (appointment)
+  [MATCH/strict] "Order for lipid panel and fasting glucose" (lab) <-> "Outpatient lipid panel and glucose" (lab)
   [FN/strict] "PCP follow-up" (appointment) - not extracted
-  [FP/flexible] "Primary care provider follow-up" (appointment) - not in expected
-  [MATCH/flexible] "Cardiology referral and follow-up for stress test" (appointment) <-> "Cardiology follow-up for stress test" (appointment)
-  [MATCH/flexible] "Order for lipid panel and serum glucose" (lab) <-> "Outpatient lipid panel and glucose" (lab)
+  [FP/flexible] "Follow-up primary care visit" (appointment) - not in expected
+  [MATCH/flexible] "Referral to cardiology for stress test evaluation" (appointment) <-> "Cardiology follow-up for stress test" (appointment)
+  [MATCH/flexible] "Order for lipid panel and fasting glucose" (lab) <-> "Outpatient lipid panel and glucose" (lab)
   [FN/flexible] "PCP follow-up" (appointment) - not extracted
 
 [edge-04] primary-care - Expected: 3, Extracted: 4, TP: 3, FP: 1, FN: 0 | P: 75% R: 100%
-  [MATCH/strict] "In-office blood pressure check" (appointment) <-> "In-office BP check" (appointment)
-  [MATCH/strict] "Hemoglobin A1c test for diabetes management" (lab) <-> "A1c lab" (lab)
-  [MATCH/strict] "Comprehensive in-person follow-up visit" (appointment) <-> "Comprehensive office visit" (appointment)
-  [FP/strict] "Laboratory orders to be completed at the upcoming office visit" (lab) - not in expected
-  [MATCH/flexible] "In-office blood pressure check" (appointment) <-> "In-office BP check" (appointment)
-  [MATCH/flexible] "Hemoglobin A1c test for diabetes management" (lab) <-> "A1c lab" (lab)
-  [MATCH/flexible] "Comprehensive in-person follow-up visit" (appointment) <-> "Comprehensive office visit" (appointment)
-  [FP/flexible] "Laboratory orders to be completed at the upcoming office visit" (lab) - not in expected
+  [MATCH/strict] "In-office blood pressure check and visit" (appointment) <-> "In-office BP check" (appointment)
+  [MATCH/strict] "Hemoglobin A1c test to assess glycemic control" (lab) <-> "A1c lab" (lab)
+  [MATCH/strict] "Comprehensive in-person physical examination" (appointment) <-> "Comprehensive office visit" (appointment)
+  [FP/strict] "Metabolic panel, lipid panel, and urinalysis ordered for the upcoming visit" (lab) - not in expected
+  [MATCH/flexible] "In-office blood pressure check and visit" (appointment) <-> "In-office BP check" (appointment)
+  [MATCH/flexible] "Hemoglobin A1c test to assess glycemic control" (lab) <-> "A1c lab" (lab)
+  [MATCH/flexible] "Comprehensive in-person physical examination" (appointment) <-> "Comprehensive office visit" (appointment)
+  [FP/flexible] "Metabolic panel, lipid panel, and urinalysis ordered for the upcoming visit" (lab) - not in expected
 
-[edge-05] nephrology - Expected: 3, Extracted: 3, TP: 2, FP: 1, FN: 1 | P: 67% R: 67%
-  [MATCH/strict] "Routine renal function monitoring including Basic Metabolic Panel, UACR, and phosphorus" (lab) <-> "Repeat BMP, urine ACR, phosphorus" (lab)
-  [MATCH/strict] "Check Parathyroid hormone and Vitamin D levels for CKD-MBD screening" (lab) <-> "Check PTH and vitamin D" (lab)
+[edge-05] nephrology - Expected: 3, Extracted: 4, TP: 2, FP: 2, FN: 1 | P: 50% R: 67%
+  [MATCH/strict] "Repeat Basic Metabolic Panel, UACR, and serum phosphorus for renal monitoring" (lab) <-> "Repeat BMP, urine ACR, phosphorus" (lab)
+  [FP/strict] "Renal ultrasound contingent on creatinine progression or hematuria" (imaging_document) - not in expected
+  [MATCH/strict] "Check parathyroid hormone and vitamin D levels" (lab) <-> "Check PTH and vitamin D" (lab)
   [FP/strict] "Follow-up visit for CKD management" (appointment) - not in expected
   [FN/strict] "Nephrology follow-up" (appointment) - not extracted
-  [MATCH/flexible] "Routine renal function monitoring including Basic Metabolic Panel, UACR, and phosphorus" (lab) <-> "Repeat BMP, urine ACR, phosphorus" (lab)
-  [MATCH/flexible] "Check Parathyroid hormone and Vitamin D levels for CKD-MBD screening" (lab) <-> "Check PTH and vitamin D" (lab)
+  [MATCH/flexible] "Repeat Basic Metabolic Panel, UACR, and serum phosphorus for renal monitoring" (lab) <-> "Repeat BMP, urine ACR, phosphorus" (lab)
+  [FP/flexible] "Renal ultrasound contingent on creatinine progression or hematuria" (imaging_document) - not in expected
+  [MATCH/flexible] "Check parathyroid hormone and vitamin D levels" (lab) <-> "Check PTH and vitamin D" (lab)
   [FP/flexible] "Follow-up visit for CKD management" (appointment) - not in expected
   [FN/flexible] "Nephrology follow-up" (appointment) - not extracted
 
@@ -236,32 +237,32 @@ AGGREGATE METRICS
 Notes analyzed:      21
 Total expected:      64
 Total extracted:     69
-True positives:      54
-False positives:     15
-False negatives:     10
+True positives:      53
+False positives:     16
+False negatives:     11
 Strict TP/FP/FN:     52/17/12
 Strict Precision:    75.4%
 Strict Recall:       81.3%
 Strict F1 Score:     78.2%
-Flexible Precision:  78.3%
-Flexible Recall:     84.4%
-Flexible F1 Score:   81.2%
-False positive rate: 21.7%
-False negative rate: 15.6%
+Flexible Precision:  76.8%
+Flexible Recall:     82.8%
+Flexible F1 Score:   79.7%
+False positive rate: 23.2%
+False negative rate: 17.2%
 
 PER-CLASS METRICS:
-  lab                  P: 81% | R: 89% | F1: 85% | TP:17 FP:4 FN:2
-  appointment          P: 73% | R: 75% | F1: 74% | TP:24 FP:9 FN:8
-  imaging_document     P: 87% | R: 100% | F1: 93% | TP:13 FP:2 FN:0
+  lab                  P: 71% | R: 79% | F1: 75% | TP:15 FP:6 FN:4
+  appointment          P: 79% | R: 81% | F1: 80% | TP:26 FP:7 FN:6
+  imaging_document     P: 80% | R: 92% | F1: 86% | TP:12 FP:3 FN:1
 
 PER-SPECIALTY METRICS:
-  primary-care           F1: 86% | P: 83% | R: 90% | Notes: 8
+  primary-care           F1: 82% | P: 78% | R: 86% | Notes: 8
   cardiology             F1: 78% | P: 75% | R: 82% | Notes: 3
-  oncology               F1: 100% | P: 100% | R: 100% | Notes: 2
-  endocrinology          F1: 93% | P: 88% | R: 100% | Notes: 2
-  surgery                F1: 40% | P: 40% | R: 40% | Notes: 2
-  psychiatry             F1: 77% | P: 71% | R: 83% | Notes: 2
+  oncology               F1: 88% | P: 88% | R: 88% | Notes: 2
+  endocrinology          F1: 86% | P: 86% | R: 86% | Notes: 2
+  surgery                F1: 60% | P: 60% | R: 60% | Notes: 2
+  psychiatry             F1: 92% | P: 86% | R: 100% | Notes: 2
   emergency-medicine     F1: 67% | P: 67% | R: 67% | Notes: 1
-  nephrology             F1: 67% | P: 67% | R: 67% | Notes: 1
+  nephrology             F1: 57% | P: 50% | R: 67% | Notes: 1
 
 ======================================================================

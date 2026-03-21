@@ -13,6 +13,8 @@ const __dirname = dirname(__filename);
 
 let dashboardHtml: string;
 let metricsHtml: string;
+let titleHtml: string;
+let closingHtml: string;
 try {
   dashboardHtml = readFileSync(join(__dirname, "dashboard", "index.html"), "utf-8");
 } catch {
@@ -29,6 +31,24 @@ try {
     metricsHtml = readFileSync(join(__dirname, "..", "src", "dashboard", "metrics.html"), "utf-8");
   } catch {
     metricsHtml = "<html><body><h1>Metrics page not available</h1></body></html>";
+  }
+}
+try {
+  titleHtml = readFileSync(join(__dirname, "dashboard", "title.html"), "utf-8");
+} catch {
+  try {
+    titleHtml = readFileSync(join(__dirname, "..", "src", "dashboard", "title.html"), "utf-8");
+  } catch {
+    titleHtml = "<html><body><h1>Title slide not available</h1></body></html>";
+  }
+}
+try {
+  closingHtml = readFileSync(join(__dirname, "dashboard", "closing.html"), "utf-8");
+} catch {
+  try {
+    closingHtml = readFileSync(join(__dirname, "..", "src", "dashboard", "closing.html"), "utf-8");
+  } catch {
+    closingHtml = "<html><body><h1>Closing slide not available</h1></body></html>";
   }
 }
 
@@ -283,6 +303,20 @@ async function start(): Promise<void> {
         res.statusCode = 200;
         res.setHeader("content-type", "text/html; charset=utf-8");
         res.end(metricsHtml);
+        return;
+      }
+
+      if (method === "GET" && path === "/title") {
+        res.statusCode = 200;
+        res.setHeader("content-type", "text/html; charset=utf-8");
+        res.end(titleHtml);
+        return;
+      }
+
+      if (method === "GET" && path === "/closing") {
+        res.statusCode = 200;
+        res.setHeader("content-type", "text/html; charset=utf-8");
+        res.end(closingHtml);
         return;
       }
 
