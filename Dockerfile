@@ -7,8 +7,11 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY tsconfig.json package.json ./
+COPY scripts ./scripts
 COPY src ./src
 RUN npm run build
+# Safety net: ensure dashboard static assets exist in dist (also copied by npm build)
+RUN mkdir -p dist/dashboard && cp -r src/dashboard/* dist/dashboard/
 
 FROM node:20-alpine AS runtime
 WORKDIR /app

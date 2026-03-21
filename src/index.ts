@@ -1,9 +1,26 @@
+import { readFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ClinicalPromise, PromiseStatus } from "./promises/types.js";
 import { extractPromisesTool } from "./tools/extract-promises.js";
 import { checkPromisesTool } from "./tools/check-promises.js";
 import { generateTasksTool } from "./tools/generate-tasks.js";
 import { getPromiseSummaryTool } from "./tools/get-promise-summary.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+let dashboardHtml: string;
+try {
+  dashboardHtml = readFileSync(join(__dirname, "dashboard", "index.html"), "utf-8");
+} catch {
+  try {
+    dashboardHtml = readFileSync(join(__dirname, "..", "src", "dashboard", "index.html"), "utf-8");
+  } catch {
+    dashboardHtml = "<html><body><h1>Dashboard not available</h1></body></html>";
+  }
+}
 
 const port = Number(process.env.PORT ?? "3000");
 const TOOL_DEFINITIONS = [
@@ -242,6 +259,13 @@ async function start(): Promise<void> {
           name: "clinical-promise-keeper",
           version: "0.1.0",
         });
+        return;
+      }
+
+      if (method === "GET" && path === "/dashboard") {
+        res.statusCode = 200;
+        res.setHeader("content-type", "text/html; charset=utf-8");
+        res.end(dashboardHtml);
         return;
       }
 

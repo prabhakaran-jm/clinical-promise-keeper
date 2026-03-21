@@ -103,6 +103,8 @@ export async function getPromiseSummaryTool(
       unkept: unkept.length,
       pending: statuses.filter((status) => status.status === "pending").length,
       unkeptDetails: unkept,
+      pendingDetails: statuses.filter((status) => status.status === "pending"),
+      keptDetails: statuses.filter((status) => status.status === "kept"),
       generatedTasks: tasks,
       generatedCommunications: communications,
       checkedAt: new Date().toISOString(),

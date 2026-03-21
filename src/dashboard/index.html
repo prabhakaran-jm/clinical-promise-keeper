@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Promise Keeper — Dashboard</title>
+  <style>
+    /* === Reset & Base === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a2332;
+      line-height: 1.6;
+    }
+
+    /* === Header === */
+    .header {
+      background: linear-gradient(135deg, #0a3d5c 0%, #1a6b8a 100%);
+      color: white;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 24px; font-weight: 600; }
+    .header .subtitle { opacity: 0.85; font-size: 14px; margin-top: 4px; }
+    .header .badge {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    /* === Stats Bar === */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 24px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stat-card .number { font-size: 36px; font-weight: 700; }
+    .stat-card .label { font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card.urgent .number { color: #dc2626; }
+    .stat-card.pending .number { color: #f59e0b; }
+    .stat-card.kept .number { color: #10b981; }
+    .stat-card.total .number { color: #0a3d5c; }
+
+    /* === Main Content === */
+    .content { max-width: 1200px; margin: 0 auto; padding: 0 32px 32px; }
+
+    /* === Timeline === */
+    .timeline-section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .timeline-section h2 { font-size: 18px; margin-bottom: 16px; color: #0a3d5c; }
+    .timeline {
+      position: relative;
+      padding: 16px 0;
+      overflow-x: auto;
+    }
+    .timeline-track {
+      position: relative;
+      height: 60px;
+      background: #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .timeline-bar {
+      position: absolute;
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+      min-width: 120px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .timeline-bar:hover { opacity: 0.85; }
+    .timeline-bar.unkept { background: #dc2626; }
+    .timeline-bar.pending { background: #f59e0b; color: #1a2332; }
+    .timeline-bar.kept { background: #10b981; }
+    .timeline-bar.indeterminate { background: #9ca3af; }
+    .timeline-today {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #0a3d5c;
+      z-index: 10;
+    }
+    .timeline-today-label {
+      position: absolute;
+      top: -20px;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #0a3d5c;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* === Promise Cards === */
+    .promises-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .promise-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-left: 4px solid #e5e7eb;
+      transition: transform 0.2s;
+    }
+    .promise-card:hover { transform: translateY(-2px); }
+    .promise-card.unkept { border-left-color: #dc2626; }
+    .promise-card.pending { border-left-color: #f59e0b; }
+    .promise-card.kept { border-left-color: #10b981; }
+    .promise-card.indeterminate { border-left-color: #9ca3af; }
+
+    .promise-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .promise-card .card-title { font-weight: 600; font-size: 15px; }
+    .promise-card .status-badge {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-badge.unkept { background: #fef2f2; color: #dc2626; }
+    .status-badge.pending { background: #fffbeb; color: #d97706; }
+    .status-badge.kept { background: #ecfdf5; color: #059669; }
+    .status-badge.indeterminate { background: #f3f4f6; color: #6b7280; }
+
+    .promise-card .significance {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .significance.high { background: #fef2f2; color: #dc2626; }
+    .significance.medium { background: #fffbeb; color: #d97706; }
+    .significance.low { background: #f0f4f8; color: #6b7280; }
+
+    .promise-card .detail { font-size: 13px; color: #4b5563; margin-bottom: 6px; }
+    .promise-card .detail strong { color: #1a2332; }
+    .promise-card .quote {
+      background: #f9fafb;
+      border-left: 3px solid #d1d5db;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-style: italic;
+      color: #6b7280;
+      margin: 8px 0;
+      border-radius: 0 4px 4px 0;
+    }
+    .promise-card .action {
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #1d4ed8;
+      margin-top: 12px;
+    }
+
+    /* === Input Section === */
+    .input-section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+    }
+    .input-section h2 { font-size: 18px; margin-bottom: 16px; color: #0a3d5c; }
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #374151; }
+    .input-group textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+    }
+    .input-group input[type="date"] {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: #0a3d5c; color: white; }
+    .btn-primary:hover { background: #0c4a6e; }
+    .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    /* === Loading === */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 48px;
+    }
+    .loading.active { display: block; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #0a3d5c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* === Disclaimer === */
+    .disclaimer {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #92400e;
+      margin-top: 24px;
+    }
+
+    /* === Empty State === */
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: #6b7280;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+
+    /* === Responsive === */
+    @media (max-width: 768px) {
+      .header { padding: 16px; }
+      .stats-bar { padding: 16px; }
+      .content { padding: 0 16px 16px; }
+      .promises-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Clinical Promise Keeper</h1>
+      <div class="subtitle">AI-Powered Follow-Up Gap Analysis</div>
+    </div>
+    <div class="badge">v0.1.0</div>
+  </div>
+
+  <!-- Input Section -->
+  <div class="content">
+    <div class="input-section">
+      <h2>Analyze Clinical Note</h2>
+      <div class="input-group">
+        <label for="noteDate">Note Date</label>
+        <input type="date" id="noteDate" value="2026-02-20">
+      </div>
+      <div class="input-group">
+        <label for="noteText">Clinical Note Text</label>
+        <textarea id="noteText" placeholder="Paste clinical note text here...">Date: 2026-02-20
+
+OFFICE VISIT - FOLLOW UP
+
+Chief Complaint: Follow-up for Type 2 Diabetes and Hypertension
+
+History of Present Illness:
+Patient presents for routine follow-up. Reports good medication compliance but has been experiencing occasional headaches. Blood glucose readings at home have been ranging 180-220 mg/dL, which is above target. Patient missed last ophthalmology referral appointment. Mentions lab work was done at an outside facility last month but results have not been received.
+
+Assessment and Plan:
+
+1. Type 2 Diabetes - poorly controlled
+   - Hemoglobin A1c was 8.2% last check in November. We need to recheck A1c in 3 weeks to assess trajectory before adjusting medications.
+   - Continue metformin 1000mg BID
+   - Refer to diabetes educator
+
+2. Hypertension - stable
+   - BP today 142/88, slightly elevated
+   - Recheck potassium and basic metabolic panel in 2 weeks given recent lisinopril dose increase
+   - Return to clinic in 6 weeks for BP recheck
+
+3. Preventive Care
+   - Patient is overdue for follow-up CT chest given history of pulmonary nodule found incidentally last year. Please schedule repeat CT chest within the next 4 weeks.
+   - Need to obtain outside lab records from Quest Diagnostics from January visit
+
+Follow-up: Return in 6 weeks. Sooner if symptoms worsen.
+
+Signed: Dr. Sarah Chen, MD</textarea>
+      </div>
+      <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeNote()">Analyze Promises</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Analyzing clinical note with AI...</div>
+      <div style="font-size: 13px; color: #6b7280; margin-top: 8px;">
+        Running: Extraction → Calibration → FHIR Verification → Clinical Insight → Summary
+      </div>
+    </div>
+
+    <!-- Results (hidden until analysis runs) -->
+    <div id="results" style="display: none;">
+      <!-- Stats -->
+      <div class="stats-bar" id="statsBar"></div>
+
+      <!-- Timeline -->
+      <div class="timeline-section">
+        <h2>Promise Timeline</h2>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <!-- Promise Cards -->
+      <div id="promiseCards"></div>
+
+      <!-- Generated Tasks -->
+      <div id="tasksSection" style="display: none;">
+        <div class="timeline-section">
+          <h2>Generated FHIR Tasks</h2>
+          <div id="tasksList"></div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer">
+        This is an AI-generated analysis intended for clinical decision support only.
+        All findings must be verified by a qualified healthcare professional before any clinical action is taken.
+        This tool may miss relevant findings or generate false positives.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    async function analyzeNote() {
+      const noteText = document.getElementById('noteText').value.trim();
+      const noteDate = document.getElementById('noteDate').value;
+
+      if (!noteText) { alert('Please enter clinical note text'); return; }
+      if (!noteDate) { alert('Please select a note date'); return; }
+
+      const btn = document.getElementById('analyzeBtn');
+      const loading = document.getElementById('loading');
+      const results = document.getElementById('results');
+
+      btn.disabled = true;
+      loading.classList.add('active');
+      results.style.display = 'none';
+
+      try {
+        await fetch(`${API_BASE}/mcp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-FHIR-Server-URL': 'https://hapi.fhir.org/baseR4',
+            'X-FHIR-Access-Token': 'demo-token',
+            'X-Patient-ID': 'demo-dashboard-patient',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+              protocolVersion: '2025-03-26',
+              capabilities: {},
+              clientInfo: { name: 'dashboard', version: '1.0.0' },
+            },
+          }),
+        });
+
+        const toolResponse = await fetch(`${API_BASE}/mcp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-FHIR-Server-URL': 'https://hapi.fhir.org/baseR4',
+            'X-FHIR-Access-Token': 'demo-token',
+            'X-Patient-ID': 'demo-dashboard-patient',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'tools/call',
+            params: {
+              name: 'get_promise_summary',
+              arguments: {
+                notes: [{ noteText, noteDate }],
+                includeNarrative: true,
+              },
+            },
+          }),
+        });
+
+        const toolResult = await toolResponse.json();
+
+        if (toolResult.error) {
+          throw new Error(toolResult.error.message);
+        }
+
+        const resultText = toolResult.result?.content?.[0]?.text ?? '';
+        const jsonPart = resultText.split('\n\n---\n')[0];
+        const data = JSON.parse(jsonPart);
+
+        renderResults(data);
+      } catch (error) {
+        alert(`Analysis failed: ${error.message}`);
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+        loading.classList.remove('active');
+      }
+    }
+
+    function renderResults(data) {
+      const results = document.getElementById('results');
+      const sd = data.structuredData;
+
+      document.getElementById('statsBar').innerHTML = `
+        <div class="stat-card total">
+          <div class="number">${sd.totalPromises}</div>
+          <div class="label">Total Promises</div>
+        </div>
+        <div class="stat-card urgent">
+          <div class="number">${sd.unkept}</div>
+          <div class="label">Unkept / Past Due</div>
+        </div>
+        <div class="stat-card pending">
+          <div class="number">${sd.pending}</div>
+          <div class="label">Pending</div>
+        </div>
+        <div class="stat-card kept">
+          <div class="number">${sd.kept}</div>
+          <div class="label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">${sd.analyzedNotes}</div>
+          <div class="label">Notes Analyzed</div>
+        </div>
+      `;
+
+      const allPromises = [];
+      if (sd.unkeptDetails) {
+        sd.unkeptDetails.forEach(ps => allPromises.push(ps));
+      }
+      if (sd.pendingDetails) {
+        sd.pendingDetails.forEach(ps => allPromises.push(ps));
+      }
+      if (sd.keptDetails) {
+        sd.keptDetails.forEach(ps => allPromises.push(ps));
+      }
+
+      renderTimeline(allPromises);
+      renderPromiseCards(allPromises);
+
+      const tasksSection = document.getElementById('tasksSection');
+      if (sd.generatedTasks && sd.generatedTasks.length > 0) {
+        tasksSection.style.display = 'block';
+        renderTasks(sd.generatedTasks);
+      } else {
+        tasksSection.style.display = 'none';
+      }
+
+      results.style.display = 'block';
+    }
+
+    function renderTimeline(promises) {
+      const container = document.getElementById('timeline');
+      if (promises.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📅</div><div>No promises with timeline data</div></div>';
+        return;
+      }
+
+      const today = new Date();
+      const allDates = [];
+      promises.forEach(ps => {
+        const p = ps.promise || ps;
+        if (p.timeframe) {
+          if (p.timeframe.earliest) allDates.push(new Date(p.timeframe.earliest));
+          if (p.timeframe.latest) allDates.push(new Date(p.timeframe.latest));
+        }
+      });
+      allDates.push(today);
+
+      const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+      const maxDate = new Date(Math.max(...allDates.map(d => d.getTime())));
+
+      minDate.setDate(minDate.getDate() - 7);
+      maxDate.setDate(maxDate.getDate() + 14);
+
+      const rangeMs = maxDate - minDate;
+      const todayPos = rangeMs > 0 ? ((today - minDate) / rangeMs) * 100 : 50;
+
+      let html = '';
+
+      html += '<div style="position: relative; height: 30px; margin-bottom: 8px;">';
+      html += `<span style="position: absolute; left: 0; font-size: 11px; color: #6b7280;">${formatDate(minDate)}</span>`;
+      html += `<span style="position: absolute; right: 0; font-size: 11px; color: #6b7280;">${formatDate(maxDate)}</span>`;
+      html += '</div>';
+
+      promises.forEach((ps) => {
+        const p = ps.promise || ps;
+        const status = ps.status || 'pending';
+        if (!p.timeframe || !p.timeframe.earliest) return;
+
+        const earliest = new Date(p.timeframe.earliest);
+        const latest = new Date(p.timeframe.latest || p.timeframe.earliest);
+
+        const left = rangeMs > 0 ? Math.max(0, ((earliest - minDate) / rangeMs) * 100) : 0;
+        const right = rangeMs > 0 ? Math.min(100, ((latest - minDate) / rangeMs) * 100) : 100;
+        const width = Math.max(8, right - left);
+
+        html += `<div class="timeline-track">`;
+        html += `<div class="timeline-bar ${status}" style="left: ${left}%; width: ${width}%;">
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.description || p.displayName || 'Promise'}</span>
+        </div>`;
+        html += `<div class="timeline-today" style="left: ${todayPos}%;">
+          <div class="timeline-today-label">Today</div>
+        </div>`;
+        html += `</div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderPromiseCards(promises) {
+      const container = document.getElementById('promiseCards');
+
+      if (promises.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">✅</div><div>No outstanding promises found</div></div>';
+        return;
+      }
+
+      const order = { unkept: 0, pending: 1, kept: 2, indeterminate: 3 };
+      const sorted = promises.slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
+
+      let html = '<div class="promises-grid">';
+      sorted.forEach(ps => {
+        const p = ps.promise || ps;
+        const status = ps.status || 'pending';
+        const insight = ps.insight;
+
+        html += `<div class="promise-card ${status}">`;
+        html += `<div class="card-header">`;
+        html += `<div class="card-title">${p.description || p.displayName || 'Clinical Promise'}</div>`;
+        html += `<span class="status-badge ${status}">${status}</span>`;
+        html += `</div>`;
+
+        if (insight && insight.clinicalSignificance) {
+          html += `<span class="significance ${insight.clinicalSignificance}">${insight.clinicalSignificance} significance</span>`;
+        }
+
+        if (p.sourceText) {
+          html += `<div class="quote">"${p.sourceText}"</div>`;
+        }
+
+        html += `<div class="detail"><strong>Type:</strong> ${p.class || 'unknown'}</div>`;
+
+        if (p.timeframe) {
+          html += `<div class="detail"><strong>Due Window:</strong> ${p.timeframe.earliest || '?'} to ${p.timeframe.latest || '?'}</div>`;
+        }
+
+        if (ps.reason) {
+          html += `<div class="detail"><strong>Reason:</strong> ${ps.reason}</div>`;
+        }
+
+        if (insight) {
+          if (insight.explanation) {
+            html += `<div class="detail"><strong>Explanation:</strong> ${insight.explanation}</div>`;
+          }
+          if (insight.recommendedAction) {
+            html += `<div class="action">${insight.recommendedAction}</div>`;
+          }
+        }
+
+        html += `</div>`;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function renderTasks(tasks) {
+      const container = document.getElementById('tasksList');
+      let html = '';
+      tasks.forEach(task => {
+        const priority = task.priority || 'routine';
+        html += `<div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 4px solid ${priority === 'urgent' ? '#dc2626' : '#6b7280'};">`;
+        html += `<div style="font-weight: 600; margin-bottom: 4px;">FHIR Task — ${priority.toUpperCase()}</div>`;
+        html += `<div style="font-size: 13px; color: #4b5563;">${task.description || 'Draft task'}</div>`;
+        html += `<div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Status: ${task.status} | Intent: ${task.intent}</div>`;
+        html += `</div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
+  </script>
+</body>
+</html>
