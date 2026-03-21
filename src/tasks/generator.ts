@@ -18,16 +18,28 @@ function isFullPromiseStatus(item: unknown): item is PromiseStatus {
     typeof item === "object" &&
     item !== null &&
     "promise" in item &&
-    typeof (item as PromiseStatus).promise?.timeframe?.latest === "string"
+    typeof (item as PromiseStatus).promise === "object" &&
+    (item as PromiseStatus).promise !== null
   );
 }
 
 function determinePriority(promiseStatus: PromiseStatus): "routine" | "urgent" {
-  return todayIsoDate() > promiseStatus.promise.timeframe.latest ? "urgent" : "routine";
+  const latest = promiseStatus.promise?.timeframe?.latest;
+  if (!latest) return "urgent"; // No deadline info = treat as urgent
+  return todayIsoDate() > latest ? "urgent" : "routine";
 }
 
 function taskFromFull(patientId: string, status: PromiseStatus): FhirTask {
-  return {
+  const tf = status.promise?.timeframe;
+  const earliest = tf?.earliest ?? todayIsoDate();
+  const latest = tf?.latest ?? todayIsoDate();
+  const refDate = tf?.referenceDate ?? "unknown date";
+  const promiseClass = status.promise?.class ?? "follow-up";
+  const description = status.promise?.description ?? "Clinical follow-up";
+  const sourceText = status.promise?.sourceText ?? description;
+  const sourceDocId = status.promise?.sourceDocumentId;
+
+  const task: FhirTask = {
     resourceType: "Task",
     status: "draft",
     intent: "proposal",
@@ -41,23 +53,28 @@ function taskFromFull(patientId: string, status: PromiseStatus): FhirTask {
         },
       ],
     },
-    description: `Follow-up ${status.promise.class} (${status.promise.description}) was promised on ${status.promise.timeframe.referenceDate} but not completed. Due window: ${status.promise.timeframe.earliest} to ${status.promise.timeframe.latest}.`,
+    description: `Follow-up ${promiseClass} (${description}) was promised on ${refDate} but not completed. Due window: ${earliest} to ${latest}.`,
     for: { reference: `Patient/${patientId}` },
-    focus: { reference: `DocumentReference/${status.promise.sourceDocumentId}` },
     authoredOn: new Date().toISOString(),
     restriction: {
       period: {
-        start: status.promise.timeframe.earliest,
-        end: status.promise.timeframe.latest,
+        start: earliest,
+        end: latest,
       },
     },
     input: [
       {
         type: { text: "Original clinical note excerpt" },
-        valueString: status.promise.sourceText,
+        valueString: sourceText,
       },
     ],
   };
+
+  if (sourceDocId) {
+    task.focus = { reference: `DocumentReference/${sourceDocId}` };
+  }
+
+  return task;
 }
 
 function taskFromSimplified(patientId: string, item: SimplifiedTask): FhirTask {
