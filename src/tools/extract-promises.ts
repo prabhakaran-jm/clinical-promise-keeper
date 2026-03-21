@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 import { FhirClient } from "../fhir/client.js";
 import { extractPromises } from "../promises/extractor.js";
 import { getContext } from "../sharp/context.js";
+import { wrapWithDisclaimer } from "../utils/disclaimers.js";
 
 type ExtractPromisesInput = {
   patientId?: string;
@@ -97,7 +98,12 @@ export async function extractPromisesTool(
     }));
 
     return {
-      content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+      content: [
+        {
+          type: "text" as const,
+          text: wrapWithDisclaimer(JSON.stringify(output, null, 2), "analysis"),
+        },
+      ],
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

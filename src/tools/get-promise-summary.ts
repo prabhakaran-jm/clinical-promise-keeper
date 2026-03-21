@@ -5,6 +5,8 @@ import { extractPromises } from "../promises/extractor.js";
 import { checkPromises } from "../promises/checker.js";
 import { generateTasks, generateCommunicationRequests } from "../tasks/generator.js";
 import { getContext } from "../sharp/context.js";
+import { wrapWithDisclaimer } from "../utils/disclaimers.js";
+import { generateClinicalSummary } from "../llm/summarizer.js";
 import type { ClinicalPromise } from "../promises/types.js";
 
 type NoteInput = {
@@ -16,6 +18,8 @@ type SummaryInput = {
   patientId?: string;
   lookbackDays?: number;
   notes?: NoteInput[];
+  /** If true (default), runs a second Gemini pass for a clinician-facing markdown narrative. */
+  includeNarrative?: boolean;
 };
 
 type ToolExtra = {
@@ -104,8 +108,24 @@ export async function getPromiseSummaryTool(
       checkedAt: new Date().toISOString(),
     };
 
+    const includeNarrative = input.includeNarrative !== false;
+    let narrative: string | null = null;
+    if (includeNarrative) {
+      narrative = await generateClinicalSummary(summary as Record<string, unknown>);
+    }
+
+    const output = {
+      narrative,
+      structuredData: summary,
+    };
+
     return {
-      content: [{ type: "text", text: JSON.stringify(summary, null, 2) }],
+      content: [
+        {
+          type: "text" as const,
+          text: wrapWithDisclaimer(JSON.stringify(output, null, 2), "analysis"),
+        },
+      ],
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

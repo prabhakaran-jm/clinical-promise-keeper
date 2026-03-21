@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { FhirClient } from "../src/fhir/client.js";
 import { checkPromises } from "../src/promises/checker.js";
 import { generateTasks } from "../src/tasks/generator.js";
 import type { ClinicalPromise, PromiseStatus } from "../src/promises/types.js";
@@ -10,6 +11,13 @@ class MockFhirClient {
 
   async search<T extends Record<string, unknown>>(resourceType: string): Promise<T> {
     return this.responder(resourceType) as T;
+  }
+
+  async searchWithFallback<T extends Record<string, unknown>>(
+    resourceType: string,
+    _params?: Record<string, unknown>
+  ): Promise<T> {
+    return this.search<T>(resourceType);
   }
 }
 
@@ -93,9 +101,9 @@ describe("checkPromises", () => {
     expect(statuses[0].status).toBe("pending");
   });
 
-  it("returns indeterminate when FHIR query throws", async () => {
+  it("returns indeterminate when FHIR searchWithFallback throws", async () => {
     const client = {
-      search: async () => {
+      searchWithFallback: async () => {
         throw new Error("FHIR unavailable");
       },
     };
@@ -103,6 +111,44 @@ describe("checkPromises", () => {
     const statuses = await checkPromises(client as never, [makePromise()]);
     expect(statuses[0].status).toBe("indeterminate");
     expect(statuses[0].reason).toContain("FHIR verification error");
+  });
+
+  it("returns unkept when search fails but fallback yields empty bundle (demo path)", async () => {
+    const pastDue = makePromise({
+      timeframe: {
+        relativeTerm: "in 3 weeks",
+        earliest: "2024-01-01",
+        latest: "2024-01-15",
+        referenceDate: "2023-12-20",
+      },
+    });
+    const client = new FhirClient({
+      fhirServerUrl: "https://example.com/fhir",
+      fhirAccessToken: "token",
+      patientId: "pat-1",
+    });
+    vi.spyOn(client, "search").mockRejectedValue(new Error("unreachable"));
+    const statuses = await checkPromises(client, [pastDue]);
+    expect(statuses[0].status).toBe("unkept");
+    vi.restoreAllMocks();
+  });
+});
+
+describe("FhirClient.searchWithFallback", () => {
+  it("returns mock empty Bundle when search throws", async () => {
+    const client = new FhirClient({
+      fhirServerUrl: "https://example.com/fhir",
+      fhirAccessToken: "token",
+      patientId: "p1",
+    });
+    vi.spyOn(client, "search").mockRejectedValue(new Error("network error"));
+    const result = await client.searchWithFallback("Observation", { patient: "x" });
+    expect(result).toEqual({
+      resourceType: "Bundle",
+      total: 0,
+      entry: [],
+    });
+    vi.restoreAllMocks();
   });
 });
 

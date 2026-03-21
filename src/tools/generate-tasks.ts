@@ -2,6 +2,7 @@ import { FhirClient } from "../fhir/client.js";
 import { generateTasks } from "../tasks/generator.js";
 import type { PromiseStatus } from "../promises/types.js";
 import { getContext } from "../sharp/context.js";
+import { wrapWithDisclaimer } from "../utils/disclaimers.js";
 
 type GenerateTasksInput = {
   patientId?: string;
@@ -37,7 +38,12 @@ export async function generateTasksTool(
     }
 
     return {
-      content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }],
+      content: [
+        {
+          type: "text" as const,
+          text: wrapWithDisclaimer(JSON.stringify(tasks, null, 2), "tasks"),
+        },
+      ],
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

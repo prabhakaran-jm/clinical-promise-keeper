@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@google/genai": "^1.46.0",
-    "@modelcontextprotocol/sdk": "latest",
     "uuid": "latest"
   },
   "devDependencies": {

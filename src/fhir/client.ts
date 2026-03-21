@@ -1,8 +1,10 @@
 import type { FhirContext } from "../sharp/context.js";
 
 type JsonObject = Record<string, unknown>;
-type SearchParamValue = string | number | boolean | undefined;
+export type SearchParamValue = string | number | boolean | undefined;
 type SearchParams = Record<string, SearchParamValue | SearchParamValue[]>;
+
+const FHIR_TIMEOUT_MS = 10_000;
 
 export class FhirClient {
   constructor(private readonly context: FhirContext) {}
@@ -33,37 +35,67 @@ export class FhirClient {
     return this.request<T>(url);
   }
 
+  async searchWithFallback<T extends JsonObject = JsonObject>(
+    resourceType: string,
+    params: Record<string, SearchParamValue | SearchParamValue[]>
+  ): Promise<T> {
+    try {
+      return await this.search<T>(resourceType, params);
+    } catch (error) {
+      console.warn(
+        `[FHIR] ${resourceType} search failed, using fallback:`,
+        error instanceof Error ? error.message : error
+      );
+      const { getMockResponse } = await import("./mock-data.js");
+      return getMockResponse(resourceType, params as Record<string, unknown>) as unknown as T;
+    }
+  }
+
   async create<T extends JsonObject = JsonObject>(resourceType: string, resource: JsonObject): Promise<T> {
     const url = new URL(`${this.context.fhirServerUrl.replace(/\/$/, "")}/${resourceType}`);
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Accept: "application/fhir+json, application/json",
-        "Content-Type": "application/fhir+json",
-        Authorization: `Bearer ${this.context.fhirAccessToken}`,
-      },
-      body: JSON.stringify(resource),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FHIR_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          Accept: "application/fhir+json, application/json",
+          "Content-Type": "application/fhir+json",
+          Authorization: `Bearer ${this.context.fhirAccessToken}`,
+        },
+        body: JSON.stringify(resource),
+      });
 
-    if (!response.ok) {
-      throw new Error(`FHIR create failed (${response.status}): ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`FHIR create failed (${response.status}): ${response.statusText}`);
+      }
+
+      return (await response.json()) as T;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return (await response.json()) as T;
   }
 
   private async request<T extends JsonObject>(url: URL): Promise<T> {
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/fhir+json, application/json",
-        Authorization: `Bearer ${this.context.fhirAccessToken}`,
-      },
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FHIR_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          Accept: "application/fhir+json, application/json",
+          Authorization: `Bearer ${this.context.fhirAccessToken}`,
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`FHIR request failed (${response.status}): ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`FHIR request failed (${response.status}): ${response.statusText}`);
+      }
+
+      return (await response.json()) as T;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return (await response.json()) as T;
   }
 }

@@ -2,6 +2,7 @@ import { FhirClient } from "../fhir/client.js";
 import { checkPromises } from "../promises/checker.js";
 import type { ClinicalPromise } from "../promises/types.js";
 import { getContext } from "../sharp/context.js";
+import { wrapWithDisclaimer } from "../utils/disclaimers.js";
 
 type CheckPromisesInput = {
   patientId?: string;
@@ -33,7 +34,12 @@ export async function checkPromisesTool(
     const statuses = await checkPromises(client, promises);
 
     return {
-      content: [{ type: "text", text: JSON.stringify(statuses, null, 2) }],
+      content: [
+        {
+          type: "text" as const,
+          text: wrapWithDisclaimer(JSON.stringify(statuses, null, 2), "analysis"),
+        },
+      ],
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

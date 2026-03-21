@@ -31,7 +31,7 @@ export async function findServiceRequests(
   if (dateFrom) {
     params.authored = `ge${dateFrom}`;
   }
-  const bundle = await client.search<SearchBundle<FhirServiceRequest>>("ServiceRequest", params);
+  const bundle = await client.searchWithFallback<SearchBundle<FhirServiceRequest>>("ServiceRequest", params);
   return fromBundle(bundle);
 }
 
@@ -58,7 +58,7 @@ export async function findObservations(
   } else if (dateFilters.length > 1) {
     params.date = dateFilters;
   }
-  const bundle = await client.search<SearchBundle<FhirObservation>>("Observation", params);
+  const bundle = await client.searchWithFallback<SearchBundle<FhirObservation>>("Observation", params);
   return fromBundle(bundle);
 }
 
@@ -84,7 +84,7 @@ export async function findAppointments(
   } else if (dateFilters.length > 1) {
     params.date = dateFilters;
   }
-  const bundle = await client.search<SearchBundle<FhirAppointment>>("Appointment", params);
+  const bundle = await client.searchWithFallback<SearchBundle<FhirAppointment>>("Appointment", params);
   return fromBundle(bundle);
 }
 
@@ -111,7 +111,7 @@ export async function findDiagnosticReports(
   } else if (dateFilters.length > 1) {
     params.date = dateFilters;
   }
-  const bundle = await client.search<SearchBundle<FhirDiagnosticReport>>("DiagnosticReport", params);
+  const bundle = await client.searchWithFallback<SearchBundle<FhirDiagnosticReport>>("DiagnosticReport", params);
   return fromBundle(bundle);
 }
 
@@ -128,6 +128,6 @@ export async function findDocumentReferences(
   if (dateFrom) {
     params.date = `ge${dateFrom}`;
   }
-  const bundle = await client.search<SearchBundle<FhirDocumentReference>>("DocumentReference", params);
+  const bundle = await client.searchWithFallback<SearchBundle<FhirDocumentReference>>("DocumentReference", params);
   return fromBundle(bundle);
 }

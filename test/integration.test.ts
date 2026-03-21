@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as gemini from "../src/llm/gemini.js";
 import { extractPromisesTool } from "../src/tools/extract-promises.js";
-import { checkPromisesTool } from "../src/tools/check-promises.js";
 import { generateTasksTool } from "../src/tools/generate-tasks.js";
 import { getPromiseSummaryTool } from "../src/tools/get-promise-summary.js";
 import { getContext, ForbiddenError } from "../src/sharp/context.js";
@@ -19,8 +18,28 @@ const SHARP_HEADERS = {
 
 const EXTRA = { requestInfo: { headers: SHARP_HEADERS } };
 
+/** Strip clinical/task disclaimer suffix before parsing tool JSON. */
+function parseToolJson(text: string): unknown {
+  const sep = "\n\n---\n";
+  const idx = text.indexOf(sep);
+  const jsonPart = idx === -1 ? text : text.slice(0, idx);
+  return JSON.parse(jsonPart);
+}
+
 function mockGeminiExtraction(items: unknown[]) {
   vi.spyOn(gemini, "callGemini").mockResolvedValue(JSON.stringify(items));
+}
+
+/** Extraction returns JSON; second pass (clinical summary) returns markdown when `responseMimeType` is text/plain. */
+function mockGeminiExtractionAndSummary(extractionItems: unknown[], narrativeMarkdown: string) {
+  vi.spyOn(gemini, "callGemini").mockImplementation(
+    async (_systemPrompt: string, _userPrompt: string, opts?: gemini.CallGeminiOptions) => {
+      if (opts?.responseMimeType === "text/plain") {
+        return narrativeMarkdown;
+      }
+      return JSON.stringify(extractionItems);
+    }
+  );
 }
 
 function buildPromise(overrides: Partial<ClinicalPromise> = {}): ClinicalPromise {
@@ -99,7 +118,8 @@ describe("extract_promises tool", () => {
     );
 
     expect(result.content).toHaveLength(1);
-    const parsed = JSON.parse(result.content[0].text);
+    expect(result.content[0].text).toContain("AI-Generated Analysis");
+    const parsed = parseToolJson(result.content[0].text) as ClinicalPromise[];
     expect(Array.isArray(parsed)).toBe(true);
     expect(parsed).toHaveLength(1);
     expect(parsed[0].class).toBe("lab");
@@ -134,7 +154,7 @@ describe("extract_promises tool", () => {
       EXTRA
     );
 
-    const parsed = JSON.parse(result.content[0].text);
+    const parsed = parseToolJson(result.content[0].text) as Array<{ confidenceLevel?: string }>;
     expect(parsed[0].confidenceLevel).toBe("medium");
   });
 });
@@ -157,7 +177,13 @@ describe("generate_tasks tool", () => {
       EXTRA
     );
 
-    const parsed = JSON.parse(result.content[0].text);
+    expect(result.content[0].text).toContain("Draft Tasks");
+    const parsed = parseToolJson(result.content[0].text) as Array<{
+      resourceType: string;
+      status: string;
+      intent: string;
+      for: { reference: string };
+    }>;
     expect(Array.isArray(parsed)).toBe(true);
     expect(parsed).toHaveLength(1);
     expect(parsed[0].resourceType).toBe("Task");
@@ -186,7 +212,7 @@ describe("generate_tasks tool", () => {
       EXTRA
     );
 
-    const parsed = JSON.parse(result.content[0].text);
+    const parsed = parseToolJson(result.content[0].text) as Array<{ priority: string }>;
     expect(parsed[0].priority).toBe("urgent");
   });
 
@@ -206,7 +232,10 @@ describe("generate_tasks tool", () => {
       EXTRA
     );
 
-    const parsed = JSON.parse(result.content[0].text);
+    const parsed = parseToolJson(result.content[0].text) as Array<{
+      resourceType: string;
+      for: { reference: string };
+    }>;
     expect(parsed).toHaveLength(1);
     expect(parsed[0].resourceType).toBe("Task");
     expect(parsed[0].for.reference).toBe("Patient/test-patient-123");
@@ -221,18 +250,21 @@ describe("get_promise_summary tool", () => {
   beforeEach(() => vi.restoreAllMocks());
 
   it("runs end-to-end with provided notes", async () => {
-    mockGeminiExtraction([
-      {
-        exactQuote: "recheck potassium in 2 weeks",
-        class: "lab",
-        description: "Repeat potassium level",
-        code: "2823-3",
-        codeSystem: "http://loinc.org",
-        displayName: "Potassium",
-        relativeTerm: "in 2 weeks",
-        confidence: 0.88,
-      },
-    ]);
+    mockGeminiExtractionAndSummary(
+      [
+        {
+          exactQuote: "recheck potassium in 2 weeks",
+          class: "lab",
+          description: "Repeat potassium level",
+          code: "2823-3",
+          codeSystem: "http://loinc.org",
+          displayName: "Potassium",
+          relativeTerm: "in 2 weeks",
+          confidence: 0.88,
+        },
+      ],
+      "## Follow-Up Gap Analysis\n\n**Patient:** test-patient-123\n\n### Summary\nAI-generated narrative for judges."
+    );
 
     // Mock fetch for FHIR queries (ServiceRequest search returns empty)
     vi.stubGlobal(
@@ -250,14 +282,19 @@ describe("get_promise_summary tool", () => {
       EXTRA
     );
 
-    const summary = JSON.parse(result.content[0].text);
-    expect(summary.patientId).toBe("test-patient-123");
-    expect(summary.analyzedNotes).toBe(1);
-    expect(summary.totalPromises).toBe(1);
-    expect(summary.unkept).toBeGreaterThanOrEqual(0);
-    expect(summary).toHaveProperty("generatedTasks");
-    expect(summary).toHaveProperty("generatedCommunications");
-    expect(summary).toHaveProperty("checkedAt");
+    expect(result.content[0].text).toContain("AI-Generated Analysis");
+    const output = parseToolJson(result.content[0].text) as {
+      narrative: string | null;
+      structuredData: Record<string, unknown>;
+    };
+    expect(output.narrative).toContain("Follow-Up Gap Analysis");
+    expect(output.structuredData.patientId).toBe("test-patient-123");
+    expect(output.structuredData.analyzedNotes).toBe(1);
+    expect(output.structuredData.totalPromises).toBe(1);
+    expect(output.structuredData.unkept).toBeGreaterThanOrEqual(0);
+    expect(output.structuredData).toHaveProperty("generatedTasks");
+    expect(output.structuredData).toHaveProperty("generatedCommunications");
+    expect(output.structuredData).toHaveProperty("checkedAt");
 
     vi.unstubAllGlobals();
   });
@@ -272,6 +309,10 @@ describe("get_promise_summary tool", () => {
   });
 
   it("handles empty notes array", async () => {
+    mockGeminiExtractionAndSummary(
+      [],
+      "## Follow-Up Gap Analysis\n\nNo clinical promises found in the analyzed period."
+    );
     // Mock fetch for FHIR DocumentReference search returns empty
     vi.stubGlobal(
       "fetch",
@@ -283,10 +324,133 @@ describe("get_promise_summary tool", () => {
 
     const result = await getPromiseSummaryTool({ notes: [] }, EXTRA);
 
-    const summary = JSON.parse(result.content[0].text);
-    expect(summary.analyzedNotes).toBe(0);
-    expect(summary.totalPromises).toBe(0);
+    const output = parseToolJson(result.content[0].text) as {
+      narrative: string | null;
+      structuredData: Record<string, unknown>;
+    };
+    expect(output.structuredData.analyzedNotes).toBe(0);
+    expect(output.structuredData.totalPromises).toBe(0);
+    expect(output.narrative).toContain("Follow-Up Gap Analysis");
 
+    vi.unstubAllGlobals();
+  });
+
+  it("returns narrative and structuredData when summary LLM succeeds", async () => {
+    mockGeminiExtractionAndSummary(
+      [
+        {
+          exactQuote: "A1c in 3 weeks",
+          class: "lab",
+          description: "Repeat A1c",
+          code: "4548-4",
+          codeSystem: "http://loinc.org",
+          displayName: "A1c",
+          relativeTerm: "in 3 weeks",
+          confidence: 0.9,
+        },
+      ],
+      "## Follow-Up Gap Analysis\n\n**Patient:** test-patient-123\n\n### Summary\nOne gap identified."
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ resourceType: "Bundle", total: 0, entry: [] }),
+      })
+    );
+
+    const result = await getPromiseSummaryTool(
+      { notes: [{ noteText: "Recheck A1c in 3 weeks", noteDate: "2026-03-01" }] },
+      EXTRA
+    );
+    const output = parseToolJson(result.content[0].text) as {
+      narrative: string | null;
+      structuredData: { patientId?: string; totalPromises?: number };
+    };
+    expect(output.narrative).toBeTruthy();
+    expect(output.narrative).toContain("Follow-Up Gap Analysis");
+    expect(output.structuredData.patientId).toBe("test-patient-123");
+    expect(output.structuredData.totalPromises).toBe(1);
+    vi.unstubAllGlobals();
+  });
+
+  it("uses fallback markdown when narrative generation fails", async () => {
+    vi.spyOn(gemini, "callGemini")
+      .mockResolvedValueOnce(
+        JSON.stringify([
+          {
+            exactQuote: "test",
+            class: "lab",
+            description: "Lab",
+            code: "123",
+            codeSystem: "http://loinc.org",
+            displayName: "Test",
+            relativeTerm: "in 1 week",
+            confidence: 0.9,
+          },
+        ])
+      )
+      .mockRejectedValueOnce(new Error("Gemini summary unavailable"));
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ resourceType: "Bundle", total: 0, entry: [] }),
+      })
+    );
+
+    const result = await getPromiseSummaryTool(
+      { notes: [{ noteText: "Do lab in 1 week", noteDate: "2026-03-01" }] },
+      EXTRA
+    );
+    const output = parseToolJson(result.content[0].text) as {
+      narrative: string | null;
+      structuredData: Record<string, unknown>;
+    };
+    expect(output.narrative).toContain("narrative generation unavailable");
+    expect(output.narrative).toContain("```json");
+    expect(output.structuredData.totalPromises).toBe(1);
+    vi.unstubAllGlobals();
+  });
+
+  it("skips narrative LLM when includeNarrative is false", async () => {
+    const spy = vi.spyOn(gemini, "callGemini").mockResolvedValue(
+      JSON.stringify([
+        {
+          exactQuote: "x",
+          class: "lab",
+          description: "d",
+          code: "1",
+          codeSystem: "http://loinc.org",
+          displayName: "T",
+          relativeTerm: "in 1 week",
+          confidence: 0.9,
+        },
+      ])
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ resourceType: "Bundle", total: 0, entry: [] }),
+      })
+    );
+
+    const result = await getPromiseSummaryTool(
+      {
+        notes: [{ noteText: "Note", noteDate: "2026-03-01" }],
+        includeNarrative: false,
+      },
+      EXTRA
+    );
+    const output = parseToolJson(result.content[0].text) as {
+      narrative: string | null;
+      structuredData: { patientId?: string };
+    };
+    expect(output.narrative).toBeNull();
+    expect(output.structuredData.patientId).toBe("test-patient-123");
+    expect(spy).toHaveBeenCalledTimes(1);
     vi.unstubAllGlobals();
   });
 });
