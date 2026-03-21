@@ -5,6 +5,7 @@ dist
 .gitignore
 docs/
 test/
-scripts/
+# Keep scripts/ in the build context — npm build runs scripts/copy-dashboard.mjs.
+# (Deploy helper shells are tiny; excluding the whole folder breaks Docker COPY scripts.)
 *.md
 .claude/
