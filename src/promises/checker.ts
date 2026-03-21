@@ -6,6 +6,7 @@ import {
   findObservations,
   findServiceRequests,
 } from "../fhir/queries.js";
+import { generateVerificationInsight } from "../llm/verifier.js";
 import type { ClinicalPromise, PromiseStatus } from "./types.js";
 
 function todayIsoDate(): string {
@@ -20,7 +21,7 @@ function makeEvidence(resourceType: string, resourceId: string | undefined, summ
   return {
     resourceType,
     resourceId: resourceId ?? "unknown",
-    date,
+    date: date ?? "",
     summary,
   };
 }
@@ -211,6 +212,20 @@ export async function checkPromises(client: FhirClient, promises: ClinicalPromis
       } else {
         status = await checkImagingOrDocumentPromise(client, promise);
       }
+
+      if (status.status === "unkept" || status.status === "pending") {
+        try {
+          status.insight = await generateVerificationInsight(
+            promise,
+            status.status,
+            status.evidence,
+            status.reason
+          );
+        } catch {
+          // Non-fatal: insight is optional and status computation must still succeed.
+        }
+      }
+
       results.push(status);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

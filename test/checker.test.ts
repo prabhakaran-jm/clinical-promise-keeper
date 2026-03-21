@@ -3,6 +3,11 @@ import { FhirClient } from "../src/fhir/client.js";
 import { checkPromises } from "../src/promises/checker.js";
 import { generateTasks } from "../src/tasks/generator.js";
 import type { ClinicalPromise, PromiseStatus } from "../src/promises/types.js";
+import { callGemini } from "../src/llm/gemini.js";
+
+vi.mock("../src/llm/gemini.js", () => ({
+  callGemini: vi.fn(),
+}));
 
 type SearchResponse = Record<string, unknown>;
 
@@ -47,7 +52,37 @@ function makePromise(overrides: Partial<ClinicalPromise> = {}): ClinicalPromise 
 }
 
 describe("checkPromises", () => {
+  it("attaches insight for unkept promises", async () => {
+    vi.mocked(callGemini).mockResolvedValue(
+      JSON.stringify({
+        explanation: "No A1c result was found in the expected window despite the follow-up promise.",
+        clinicalSignificance: "medium",
+        recommendedAction: "Contact the patient and place or confirm the repeat A1c order.",
+      })
+    );
+
+    const pastDuePromise = makePromise({
+      timeframe: {
+        relativeTerm: "in 3 weeks",
+        earliest: "2024-01-01",
+        latest: "2024-01-15",
+        referenceDate: "2023-12-20",
+      },
+    });
+    const client = new MockFhirClient(() => ({ resourceType: "Bundle", entry: [] }));
+
+    const statuses = await checkPromises(client as never, [pastDuePromise]);
+    expect(statuses[0].status).toBe("unkept");
+    expect(statuses[0].insight).toMatchObject({
+      clinicalSignificance: "medium",
+    });
+    expect(callGemini).toHaveBeenCalledTimes(1);
+    vi.restoreAllMocks();
+  });
+
   it("returns kept when matching Observation exists", async () => {
+    vi.mocked(callGemini).mockClear();
+
     const client = new MockFhirClient((resourceType) => {
       if (resourceType === "ServiceRequest") {
         return { resourceType: "Bundle", entry: [{ resource: { resourceType: "ServiceRequest", id: "sr-1" } }] };
@@ -64,9 +99,20 @@ describe("checkPromises", () => {
     const statuses = await checkPromises(client as never, [makePromise()]);
     expect(statuses[0].status).toBe("kept");
     expect(statuses[0].evidence?.resourceType).toBe("Observation");
+    expect(callGemini).not.toHaveBeenCalled();
+    expect(statuses[0].insight).toBeUndefined();
+    vi.restoreAllMocks();
   });
 
   it("returns unkept when no matching resources are found", async () => {
+    vi.mocked(callGemini).mockResolvedValue(
+      JSON.stringify({
+        explanation: "No relevant evidence was found.",
+        clinicalSignificance: "medium",
+        recommendedAction: "Review with clinician.",
+      })
+    );
+
     const pastDuePromise = makePromise({
       timeframe: {
         relativeTerm: "in 3 weeks",
@@ -79,9 +125,19 @@ describe("checkPromises", () => {
 
     const statuses = await checkPromises(client as never, [pastDuePromise]);
     expect(statuses[0].status).toBe("unkept");
+    expect(statuses[0].insight).toBeDefined();
+    vi.restoreAllMocks();
   });
 
   it("returns pending when still inside expected window with no result", async () => {
+    vi.mocked(callGemini).mockResolvedValue(
+      JSON.stringify({
+        explanation: "The order exists and the due date has not passed.",
+        clinicalSignificance: "medium",
+        recommendedAction: "Monitor for incoming result.",
+      })
+    );
+
     const inWindowPromise = makePromise({
       timeframe: {
         relativeTerm: "in 3 weeks",
@@ -99,6 +155,30 @@ describe("checkPromises", () => {
 
     const statuses = await checkPromises(client as never, [inWindowPromise]);
     expect(statuses[0].status).toBe("pending");
+    expect(statuses[0].insight).toBeDefined();
+    vi.restoreAllMocks();
+  });
+
+  it("uses fallback insight when Gemini fails", async () => {
+    vi.mocked(callGemini).mockRejectedValue(new Error("Gemini unavailable"));
+
+    const pastDuePromise = makePromise({
+      timeframe: {
+        relativeTerm: "in 3 weeks",
+        earliest: "2024-01-01",
+        latest: "2024-01-15",
+        referenceDate: "2023-12-20",
+      },
+    });
+    const client = new MockFhirClient(() => ({ resourceType: "Bundle", entry: [] }));
+
+    const statuses = await checkPromises(client as never, [pastDuePromise]);
+    expect(statuses[0].status).toBe("unkept");
+    expect(statuses[0].insight).toMatchObject({
+      clinicalSignificance: "medium",
+      recommendedAction: "Place lab order or verify with ordering provider",
+    });
+    vi.restoreAllMocks();
   });
 
   it("returns indeterminate when FHIR searchWithFallback throws", async () => {

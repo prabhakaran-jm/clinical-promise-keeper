@@ -28,9 +28,14 @@ export interface PromiseStatus {
   evidence?: {
     resourceType: string;
     resourceId: string;
-    date?: string;
+    date: string;
     summary: string;
   };
   reason?: string;
   checkedAt: string;
+  insight?: {
+    explanation: string;
+    clinicalSignificance: "high" | "medium" | "low";
+    recommendedAction: string;
+  };
 }

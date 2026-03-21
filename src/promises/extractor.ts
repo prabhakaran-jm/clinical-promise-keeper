@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { callGemini } from "../llm/gemini.js";
 import { buildFewShotPrompt } from "../llm/extraction-examples.js";
 import { defaultTimeframeFallback, normalizeTimeframe } from "./normalizer.js";
+import { calibratePromises } from "./calibrator.js";
 
 const BASE_SYSTEM_PROMPT = `You are a clinical NLP system. Extract implicit and explicit clinical commitments from the following physician note.
 
@@ -154,5 +155,6 @@ export async function extractPromises(
     });
   }
 
-  return results;
+  const calibrated = await calibratePromises(results, noteText);
+  return calibrated;
 }

@@ -375,9 +375,12 @@ describe("get_promise_summary tool", () => {
   });
 
   it("uses fallback markdown when narrative generation fails", async () => {
-    vi.spyOn(gemini, "callGemini")
-      .mockResolvedValueOnce(
-        JSON.stringify([
+    vi.spyOn(gemini, "callGemini").mockImplementation(
+      async (_systemPrompt: string, _userPrompt: string, opts?: gemini.CallGeminiOptions) => {
+        if (opts?.responseMimeType === "text/plain") {
+          throw new Error("Gemini summary unavailable");
+        }
+        return JSON.stringify([
           {
             exactQuote: "test",
             class: "lab",
@@ -388,9 +391,9 @@ describe("get_promise_summary tool", () => {
             relativeTerm: "in 1 week",
             confidence: 0.9,
           },
-        ])
-      )
-      .mockRejectedValueOnce(new Error("Gemini summary unavailable"));
+        ]);
+      }
+    );
 
     vi.stubGlobal(
       "fetch",
@@ -450,7 +453,8 @@ describe("get_promise_summary tool", () => {
     };
     expect(output.narrative).toBeNull();
     expect(output.structuredData.patientId).toBe("test-patient-123");
-    expect(spy).toHaveBeenCalledTimes(1);
+    // Extraction + calibration + verifier insight (narrative disabled).
+    expect(spy).toHaveBeenCalledTimes(3);
     vi.unstubAllGlobals();
   });
 });
