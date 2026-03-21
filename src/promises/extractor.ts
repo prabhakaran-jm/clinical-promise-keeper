@@ -1,9 +1,10 @@
 import type { ClinicalPromise } from "./types.js";
 import { v4 as uuidv4 } from "uuid";
 import { callGemini } from "../llm/gemini.js";
-import { normalizeTimeframe } from "./normalizer.js";
+import { buildFewShotPrompt } from "../llm/extraction-examples.js";
+import { defaultTimeframeFallback, normalizeTimeframe } from "./normalizer.js";
 
-const SYSTEM_PROMPT = `You are a clinical NLP system. Extract implicit and explicit clinical commitments from the following physician note.
+const BASE_SYSTEM_PROMPT = `You are a clinical NLP system. Extract implicit and explicit clinical commitments from the following physician note.
 
 A "clinical promise" is any statement that implies a future action should be taken for the patient, including:
 
@@ -27,6 +28,21 @@ Only extract actionable commitments, not observations or history
 "Check labs at next visit" IS a promise
 Return empty array if no promises found
 Return valid JSON array only, no markdown or explanation`;
+
+function buildSystemPrompt(): string {
+  return `${BASE_SYSTEM_PROMPT}
+
+IMPORTANT: Before extracting, briefly reason about each candidate sentence. Ask yourself:
+- Is this a NEW future action, or maintaining the status quo?
+- Does this imply an order, referral, or scheduling action?
+- Is there a clear or implied timeframe?
+
+Here are examples of correct extraction with reasoning:
+
+${buildFewShotPrompt()}
+
+Now analyze the following note. Return ONLY the JSON array of promises (no reasoning text in output).`;
+}
 
 type LlmPromise = {
   exactQuote?: unknown;
@@ -87,8 +103,8 @@ export async function extractPromises(
   noteDate: string,
   patientId: string
 ): Promise<ClinicalPromise[]> {
-  const userPrompt = `Note date: ${noteDate}\n\nClinical Note:\n${noteText}`;
-  const rawResponse = await callGemini(SYSTEM_PROMPT, userPrompt);
+  const userPrompt = `Note date: ${noteDate}\nPatient ID: ${patientId}\n\nClinical Note:\n${noteText}`;
+  const rawResponse = await callGemini(buildSystemPrompt(), userPrompt);
   const llmPromises = parsePromiseArray(rawResponse);
 
   const results: ClinicalPromise[] = [];
@@ -112,7 +128,7 @@ export async function extractPromises(
       continue;
     }
 
-    const timeframe = normalizeTimeframe(relativeTerm, noteDate);
+    const timeframe = normalizeTimeframe(relativeTerm, noteDate) ?? defaultTimeframeFallback(noteDate);
 
     results.push({
       id: uuidv4(),

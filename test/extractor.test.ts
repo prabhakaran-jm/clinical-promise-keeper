@@ -28,6 +28,60 @@ describe("normalizeTimeframe", () => {
       latest: "2026-03-15",
     });
   });
+
+  it("normalizes spelled-out numbers like digit form (in three weeks ≈ in 3 weeks)", () => {
+    const digits = normalizeTimeframe("in 3 weeks", "2026-03-01");
+    const words = normalizeTimeframe("in three weeks", "2026-03-01");
+    expect(words).toEqual(digits);
+    expect(words).toEqual({
+      earliest: "2026-03-15",
+      latest: "2026-03-29",
+    });
+  });
+
+  it('normalizes "within the next 4 weeks" with a tighter window than "in 4 weeks"', () => {
+    const result = normalizeTimeframe("within the next 4 weeks", "2026-03-01");
+    expect(result).toEqual({
+      earliest: "2026-03-24",
+      latest: "2026-04-03",
+    });
+  });
+
+  it('normalizes "by March" from reference through end of March', () => {
+    const result = normalizeTimeframe("by March", "2026-02-01");
+    expect(result).toEqual({
+      earliest: "2026-02-01",
+      latest: "2026-03-31",
+    });
+  });
+
+  it("normalizes next week to 7-14 days", () => {
+    const result = normalizeTimeframe("next week", "2026-03-01");
+    expect(result).toEqual({
+      earliest: "2026-03-08",
+      latest: "2026-03-15",
+    });
+  });
+
+  it("normalizes quarterly to ~2.5-3.5 months in days", () => {
+    const result = normalizeTimeframe("quarterly", "2026-03-01");
+    expect(result).toEqual({
+      earliest: "2026-05-15",
+      latest: "2026-06-14",
+    });
+  });
+
+  it('normalizes "as needed" to a wide one-year window', () => {
+    const result = normalizeTimeframe("as needed", "2026-03-01");
+    expect(result).toEqual({
+      earliest: "2026-03-01",
+      latest: "2027-03-01",
+    });
+  });
+
+  it("returns null for empty relative term", () => {
+    expect(normalizeTimeframe("", "2026-03-01")).toBeNull();
+  });
 });
 
 describe("extractPromises", () => {
