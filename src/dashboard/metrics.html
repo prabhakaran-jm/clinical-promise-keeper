@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Promise Keeper — Validation Results</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a3d5c 0%, #1a6b8a 50%, #0a3d5c 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.8;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 900px;
+      width: 100%;
+      margin-bottom: 48px;
+    }
+
+    .metric-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+    }
+    .metric-card .number {
+      font-size: 56px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .metric-card .label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.8;
+    }
+    .metric-card.highlight {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+    .metric-card.highlight .number { color: #6ee7b7; }
+
+    .specialty-table {
+      max-width: 900px;
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+    .specialty-table th {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+    .specialty-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 15px;
+    }
+    .specialty-table tr:hover { background: rgba(255,255,255,0.05); }
+
+    .bar {
+      display: inline-block;
+      height: 20px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #10b981, #6ee7b7);
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .footer {
+      font-size: 13px;
+      opacity: 0.6;
+      text-align: center;
+      max-width: 700px;
+    }
+
+    .pipeline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .pipeline .step {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .pipeline .arrow { font-size: 18px; opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <h1>Clinical Promise Keeper</h1>
+  <div class="subtitle">Validated across 21 clinical notes · 8 medical specialties · 64 ground-truth promises</div>
+
+  <div class="pipeline">
+    <span class="step">Extraction</span>
+    <span class="arrow">→</span>
+    <span class="step">Calibration</span>
+    <span class="arrow">→</span>
+    <span class="step">FHIR Verification</span>
+    <span class="arrow">→</span>
+    <span class="step">Clinical Insight</span>
+    <span class="arrow">→</span>
+    <span class="step">Narrative Summary</span>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card highlight">
+      <div class="number">81.2%</div>
+      <div class="label">F1 Score</div>
+    </div>
+    <div class="metric-card highlight">
+      <div class="number">84.4%</div>
+      <div class="label">Recall</div>
+    </div>
+    <div class="metric-card">
+      <div class="number">78.3%</div>
+      <div class="label">Precision</div>
+    </div>
+  </div>
+
+  <table class="specialty-table">
+    <thead>
+      <tr>
+        <th>Specialty</th>
+        <th>F1 Score</th>
+        <th></th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Oncology</td>
+        <td><strong>100%</strong></td>
+        <td><span class="bar" style="width: 200px;"></span></td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <td>Endocrinology</td>
+        <td><strong>93%</strong></td>
+        <td><span class="bar" style="width: 186px;"></span></td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <td>Primary Care</td>
+        <td><strong>86%</strong></td>
+        <td><span class="bar" style="width: 172px;"></span></td>
+        <td>8</td>
+      </tr>
+      <tr>
+        <td>Cardiology</td>
+        <td><strong>78%</strong></td>
+        <td><span class="bar" style="width: 156px;"></span></td>
+        <td>3</td>
+      </tr>
+      <tr>
+        <td>Psychiatry</td>
+        <td><strong>77%</strong></td>
+        <td><span class="bar" style="width: 154px;"></span></td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <td>Emergency Medicine</td>
+        <td><strong>67%</strong></td>
+        <td><span class="bar" style="width: 134px;"></span></td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <td>Nephrology</td>
+        <td><strong>67%</strong></td>
+        <td><span class="bar" style="width: 134px;"></span></td>
+        <td>1</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    Tested against synthetic clinical notes across primary care, cardiology, oncology, endocrinology, surgery, psychiatry, emergency medicine, and nephrology.
+    No Protected Health Information (PHI) was used. All data is synthetic (Synthea-generated).
+  </div>
+</body>
+</html>

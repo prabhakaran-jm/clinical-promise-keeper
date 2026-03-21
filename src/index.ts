@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 let dashboardHtml: string;
+let metricsHtml: string;
 try {
   dashboardHtml = readFileSync(join(__dirname, "dashboard", "index.html"), "utf-8");
 } catch {
@@ -19,6 +20,15 @@ try {
     dashboardHtml = readFileSync(join(__dirname, "..", "src", "dashboard", "index.html"), "utf-8");
   } catch {
     dashboardHtml = "<html><body><h1>Dashboard not available</h1></body></html>";
+  }
+}
+try {
+  metricsHtml = readFileSync(join(__dirname, "dashboard", "metrics.html"), "utf-8");
+} catch {
+  try {
+    metricsHtml = readFileSync(join(__dirname, "..", "src", "dashboard", "metrics.html"), "utf-8");
+  } catch {
+    metricsHtml = "<html><body><h1>Metrics page not available</h1></body></html>";
   }
 }
 
@@ -266,6 +276,13 @@ async function start(): Promise<void> {
         res.statusCode = 200;
         res.setHeader("content-type", "text/html; charset=utf-8");
         res.end(dashboardHtml);
+        return;
+      }
+
+      if (method === "GET" && path === "/metrics") {
+        res.statusCode = 200;
+        res.setHeader("content-type", "text/html; charset=utf-8");
+        res.end(metricsHtml);
         return;
       }
 
