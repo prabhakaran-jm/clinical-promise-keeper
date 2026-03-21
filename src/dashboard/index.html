@@ -531,6 +531,10 @@ Signed: Dr. Sarah Chen, MD</textarea>
       html += `<span style="position: absolute; left: 0; font-size: 11px; color: #6b7280;">${formatDate(minDate)}</span>`;
       html += `<span style="position: absolute; right: 0; font-size: 11px; color: #6b7280;">${formatDate(maxDate)}</span>`;
       html += '</div>';
+      html += `<div style="position: relative;">`;
+      html += `<div class="timeline-today" style="left: ${todayPos}%;">
+        <div class="timeline-today-label">Today</div>
+      </div>`;
 
       promises.forEach((ps) => {
         const p = ps.promise || ps;
@@ -548,11 +552,9 @@ Signed: Dr. Sarah Chen, MD</textarea>
         html += `<div class="timeline-bar ${status}" style="left: ${left}%; width: ${width}%;">
           <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.description || p.displayName || 'Promise'}</span>
         </div>`;
-        html += `<div class="timeline-today" style="left: ${todayPos}%;">
-          <div class="timeline-today-label">Today</div>
-        </div>`;
         html += `</div>`;
       });
+      html += `</div>`;
 
       container.innerHTML = html;
     }
