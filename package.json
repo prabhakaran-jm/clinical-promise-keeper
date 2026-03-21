@@ -8,11 +8,13 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
+    "validate": "tsx --require dotenv/config scripts/validate-extraction.ts",
     "test:local": "bash scripts/test-local.sh",
     "deploy": "bash scripts/deploy-cloudrun.sh"
   },
   "dependencies": {
     "@google/genai": "^1.46.0",
+    "dotenv": "^17.3.1",
     "uuid": "latest"
   },
   "devDependencies": {
