@@ -33,11 +33,21 @@ export async function checkPromisesTool(
         : input.promises;
     const statuses = await checkPromises(client, promises);
 
+    const output = {
+      statuses,
+      sharpContext: {
+        fhirServerUrl: context.fhirServerUrl,
+        patientId: context.patientId,
+        contextPropagated: true,
+      },
+      ...(client.mockDataUsed ? { warning: "FHIR server unreachable — verification used demo fallback data." } : {}),
+    };
+
     return {
       content: [
         {
           type: "text" as const,
-          text: wrapWithDisclaimer(JSON.stringify(statuses, null, 2), "analysis"),
+          text: wrapWithDisclaimer(JSON.stringify(output, null, 2), "analysis"),
         },
       ],
     };

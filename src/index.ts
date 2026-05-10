@@ -7,6 +7,8 @@ import { extractPromisesTool } from "./tools/extract-promises.js";
 import { checkPromisesTool } from "./tools/check-promises.js";
 import { generateTasksTool } from "./tools/generate-tasks.js";
 import { getPromiseSummaryTool } from "./tools/get-promise-summary.js";
+import { AGENT_CARD } from "./a2a/agent-card.js";
+import { createAuditEntry } from "./audit/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -258,7 +260,9 @@ async function handleMcpPost(req: IncomingMessage, res: ServerResponse): Promise
       }
       console.log(`Calling tool: ${toolName}, args: ${JSON.stringify(toolArgs).slice(0, 200)}`);
       console.log(`Headers available: ${Object.keys(headers).filter((h) => h.startsWith("x-")).join(", ")}`);
+      const audit = createAuditEntry(`tools/call:${toolName}`, headers as Record<string, string | string[] | undefined>);
       const result = await handleToolCall(toolName, toolArgs, headers);
+      audit.finish({ toolName, status: result.isError ? "error" : "success" });
       sendJson(res, 200, { jsonrpc: "2.0", id: message.id, result });
       return;
     }
@@ -289,6 +293,12 @@ async function start(): Promise<void> {
           name: "clinical-promise-keeper",
           version: "0.1.0",
         });
+        return;
+      }
+
+      if (method === "GET" && (path === "/.well-known/agent.json" || path === "/agent-card")) {
+        res.setHeader("access-control-allow-origin", "*");
+        sendJson(res, 200, AGENT_CARD);
         return;
       }
 

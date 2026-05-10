@@ -79,8 +79,27 @@
       font-size: 14px;
       opacity: 0.5;
     }
+    .impact-row {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+    .impact-card {
+      text-align: center;
+    }
+    .impact-number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #4ecdc4;
+    }
+    .impact-label {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
     .bottom {
-      margin-top: 48px;
+      margin-top: 32px;
     }
     .validated {
       font-size: 14px;
@@ -110,8 +129,22 @@
       <span class="link-primary">Available on Prompt Opinion Marketplace</span>
       <span class="link-secondary">Built for Agents Assemble Hackathon 2026</span>
     </div>
+    <div class="impact-row">
+      <div class="impact-card">
+        <div class="impact-number">5</div>
+        <div class="impact-label">FHIR R4 Resource Types<br/>Queried per Promise</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-number">5-Pass</div>
+        <div class="impact-label">AI Pipeline<br/>Extract → Calibrate → Verify → Insight → Narrate</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-number">2</div>
+        <div class="impact-label">A2A Agents<br/>Collaborating on Platform</div>
+      </div>
+    </div>
     <div class="bottom">
-      <p class="validated">Validated: 81.2% F1 Score across 8 specialties</p>
+      <p class="validated">Validated: 81.2% F1 Score across 21 notes · 8 specialties · 64 ground-truth promises</p>
       <p class="disclaimer">For clinical decision support only. Not a substitute for professional medical judgment. All outputs require clinician review.</p>
     </div>
   </div>

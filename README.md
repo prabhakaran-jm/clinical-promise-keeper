@@ -100,6 +100,16 @@ The server exposes 4 tools via JSON-RPC:
 | `generate_tasks` | Creates draft FHIR R4 Task resources for unkept promises for clinician review |
 | `get_promise_summary` | End-to-end pipeline: extract → verify → summarize with AI-generated clinical narrative |
 
+### A2A Agent Card
+
+The server exposes a standard [A2A Agent Card](https://google.github.io/A2A/) at `/.well-known/agent.json` describing:
+
+- **Skills**: 4 clinical capabilities (extract, verify, generate tasks, summarize)
+- **FHIR Capabilities**: R4 resources read/written, search parameters supported
+- **A2A Collaboration**: Promise-to-order pattern with Clinical Order Assistant
+- **Clinical Safety**: Validation metrics, clinician-review requirement, no autonomous actions
+- **Authentication**: SHARP header scheme
+
 ### SHARP Extension Headers
 
 The server uses [SHARP](https://build.fhir.org/ig/AIDeveloperAlliance/SHARP/) healthcare context headers:
@@ -152,6 +162,10 @@ src/
 │   ├── check-promises.ts       # MCP tool: check_promises
 │   ├── generate-tasks.ts       # MCP tool: generate_tasks
 │   └── get-promise-summary.ts  # MCP tool: get_promise_summary
+├── a2a/
+│   └── agent-card.ts           # A2A Agent Card (/.well-known/agent.json)
+├── audit/
+│   └── logger.ts               # PHI-free audit logging for tool calls
 ├── sharp/
 │   └── context.ts              # SHARP header extraction
 ├── utils/
@@ -220,6 +234,8 @@ The deploy script configures:
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/mcp` | POST | MCP JSON-RPC endpoint |
+| `/.well-known/agent.json` | GET | A2A Agent Card (capabilities, skills, FHIR metadata) |
+| `/agent-card` | GET | A2A Agent Card (alias) |
 | `/health` | GET | Health check |
 | `/dashboard` | GET | Interactive promise dashboard |
 | `/metrics` | GET | Validation metrics display |
@@ -230,6 +246,7 @@ The deploy script configures:
 
 > **This tool is designed for clinical decision support only and is NOT a substitute for professional medical judgment.** All outputs require clinician review before any clinical action is taken.
 
+- **Audit logging** captures tool invocations with hashed patient IDs, SHARP context presence, FHIR server domain, and duration — never raw PHI
 - No Protected Health Information (PHI) is stored, logged, or persisted by this service
 - All clinical data is processed transiently in memory and discarded after each request
 - The system operates as a stateless pass-through — clinical notes are sent to Gemini for extraction, and FHIR data is queried in real-time
