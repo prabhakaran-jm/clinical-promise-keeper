@@ -108,6 +108,12 @@ export async function getPromiseSummaryTool(
       generatedTasks: tasks,
       generatedCommunications: communications,
       checkedAt: new Date().toISOString(),
+      sharpContext: {
+        fhirServerUrl: context.fhirServerUrl,
+        patientId: context.patientId,
+        contextPropagated: true,
+      },
+      ...(client.mockDataUsed ? { warning: "FHIR server unreachable — verification used demo fallback data. Results may not reflect actual patient records." } : {}),
     };
 
     const includeNarrative = input.includeNarrative !== false;

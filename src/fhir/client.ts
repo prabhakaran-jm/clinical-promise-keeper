@@ -7,6 +7,8 @@ type SearchParams = Record<string, SearchParamValue | SearchParamValue[]>;
 const FHIR_TIMEOUT_MS = 10_000;
 
 export class FhirClient {
+  mockDataUsed = false;
+
   constructor(private readonly context: FhirContext) {}
 
   async read<T extends JsonObject = JsonObject>(resourceType: string, id: string): Promise<T> {
@@ -46,6 +48,7 @@ export class FhirClient {
         `[FHIR] ${resourceType} search failed, using fallback:`,
         error instanceof Error ? error.message : error
       );
+      this.mockDataUsed = true;
       const { getMockResponse } = await import("./mock-data.js");
       return getMockResponse(resourceType, params as Record<string, unknown>) as unknown as T;
     }
