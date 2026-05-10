@@ -32,8 +32,7 @@ Clinical Promise Keeper is an **MCP server** that extracts implicit and explicit
 
 ## Demo
 
-<!-- Replace with your actual demo video link -->
-> [Watch the 3-minute demo video →](#)
+> [Watch the 3-minute demo video →](https://youtu.be/dBTPGPQSjpM)
 
 ## How It Works
 
